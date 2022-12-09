@@ -1,0 +1,403 @@
+2022-12-09 13:32:34,314 INFO    StreamThr :44063 [internal.py:wandb_internal():88] W&B internal server running at pid: 44063, started at: 2022-12-09 13:32:34.309754
+2022-12-09 13:32:34,317 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: status
+2022-12-09 13:32:34,318 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: status
+2022-12-09 13:32:34,320 DEBUG   SenderThread:44063 [sender.py:send():301] send: header
+2022-12-09 13:32:34,323 INFO    WriterThread:44063 [datastore.py:open_for_write():75] open: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/run-6rhrtdx7.wandb
+2022-12-09 13:32:34,331 DEBUG   SenderThread:44063 [sender.py:send():301] send: run
+2022-12-09 13:32:34,876 INFO    SenderThread:44063 [dir_watcher.py:__init__():216] watching files in: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files
+2022-12-09 13:32:34,876 INFO    SenderThread:44063 [sender.py:_start_run_threads():912] run started: 6rhrtdx7 with start time 1670589154.288411
+2022-12-09 13:32:34,876 DEBUG   SenderThread:44063 [sender.py:send():301] send: summary
+2022-12-09 13:32:34,877 INFO    SenderThread:44063 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-12-09 13:32:34,877 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: check_version
+2022-12-09 13:32:34,877 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: check_version
+2022-12-09 13:32:35,022 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: run_start
+2022-12-09 13:32:35,025 DEBUG   HandlerThread:44063 [meta.py:__init__():34] meta init
+2022-12-09 13:32:35,025 DEBUG   HandlerThread:44063 [meta.py:__init__():49] meta init done
+2022-12-09 13:32:35,025 DEBUG   HandlerThread:44063 [meta.py:probe():215] probe
+2022-12-09 13:32:35,028 DEBUG   HandlerThread:44063 [meta.py:_setup_git():205] setup git
+2022-12-09 13:32:35,044 DEBUG   HandlerThread:44063 [meta.py:_setup_git():212] setup git done
+2022-12-09 13:32:35,044 DEBUG   HandlerThread:44063 [meta.py:_save_pip():53] save pip
+2022-12-09 13:32:35,045 DEBUG   HandlerThread:44063 [meta.py:_save_pip():67] save pip done
+2022-12-09 13:32:35,045 DEBUG   HandlerThread:44063 [meta.py:probe():253] probe done
+2022-12-09 13:32:35,147 DEBUG   SenderThread:44063 [sender.py:send():301] send: files
+2022-12-09 13:32:35,147 INFO    SenderThread:44063 [sender.py:_save_file():1155] saving file wandb-metadata.json with policy now
+2022-12-09 13:32:35,158 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:32:35,158 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:32:35,164 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:35,164 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:35,404 DEBUG   SenderThread:44063 [sender.py:send():301] send: telemetry
+2022-12-09 13:32:35,880 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-summary.json
+2022-12-09 13:32:35,880 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-metadata.json
+2022-12-09 13:32:35,880 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/requirements.txt
+2022-12-09 13:32:35,919 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:35,919 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:35,923 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:35,923 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:35,960 INFO    Thread-17 :44063 [upload_job.py:push():139] Uploaded file /var/folders/s3/51rzg94s5318dvd1cr9t6cq40000gn/T/tmpxrozgud3wandb/2zohumkd-wandb-metadata.json
+2022-12-09 13:32:36,992 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:36,992 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:36,993 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:36,993 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:37,826 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:37,827 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:37,827 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:37,827 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:37,888 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_created():275] file/dir created: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:32:38,648 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:38,649 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:38,651 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:38,652 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:39,520 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:39,520 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:39,524 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:39,525 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:39,909 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:32:40,862 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:40,863 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:40,864 DEBUG   SenderThread:44063 [sender.py:send():301] send: telemetry
+2022-12-09 13:32:40,869 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:40,869 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:42,033 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:42,033 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:42,034 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:42,034 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:43,054 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:43,054 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:43,057 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:43,057 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:43,834 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:43,834 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:43,834 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:43,834 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:44,648 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:44,648 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:44,649 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:44,649 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:45,423 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:45,424 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:45,426 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:45,426 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:46,244 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:46,248 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:46,252 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,252 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,252 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,252 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,252 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,255 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:46,255 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:46,255 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,255 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,997 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,998 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,998 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,998 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,998 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:46,998 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:47,937 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:32:48,434 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:32:48,435 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:32:48,488 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:32:48,488 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:32:49,174 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:32:49,945 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:32:50,415 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:32:50,416 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:33:04,997 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/config.yaml
+2022-12-09 13:33:05,663 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:33:05,663 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:33:20,910 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:33:20,912 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:33:36,171 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:33:36,171 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:33:51,418 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:33:51,418 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:34:06,676 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:34:06,677 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:34:21,931 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:34:21,931 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:34:37,184 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:34:37,185 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:34:52,445 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:34:52,446 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:35:07,715 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:35:07,715 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:35:22,973 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:35:22,974 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:35:38,234 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:35:38,235 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:35:53,495 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:35:53,496 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:36:08,743 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:36:08,744 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:36:24,000 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:36:24,000 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:36:39,264 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:36:39,268 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:36:54,531 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:36:54,532 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:37:09,839 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:37:09,840 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:37:25,090 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:37:25,091 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:37:40,353 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:37:40,354 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:37:55,609 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:37:55,611 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:38:10,885 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:38:10,886 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:38:26,134 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:38:26,136 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:38:41,384 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:38:41,385 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:38:56,650 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:38:56,653 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:39:11,976 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:39:11,977 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:39:27,233 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:39:27,234 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:39:42,493 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:39:42,494 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:39:57,763 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:39:57,764 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:40:13,025 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:40:13,025 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:40:28,282 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:40:28,283 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:40:43,561 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:40:43,562 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:40:58,859 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:40:58,859 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:41:14,125 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:41:14,126 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:41:29,393 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:41:29,394 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:41:44,652 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:41:44,652 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:41:59,903 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:41:59,904 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:42:15,152 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:42:15,154 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:42:30,415 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:42:30,416 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:42:45,673 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:42:45,674 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:43:00,936 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:43:00,936 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:43:16,187 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:43:16,189 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:43:31,441 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:43:31,442 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:43:46,677 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:43:46,678 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:44:00,201 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:00,201 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:00,213 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:00,214 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:01,049 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:01,915 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:44:01,916 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:44:17,164 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:44:17,164 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:44:30,878 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:30,878 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:30,882 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:30,882 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:31,713 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:32,440 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:44:32,441 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:44:45,971 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:45,971 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:45,976 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:45,976 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:46,761 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:47,689 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:44:47,689 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:44:50,284 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:50,284 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:50,289 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:50,289 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:51,054 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:52,898 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:52,898 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:52,902 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:52,902 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:53,693 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:55,130 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:44:55,130 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:44:55,176 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:44:55,176 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:44:55,913 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:44:56,531 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:02,944 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:45:02,945 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:45:11,383 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:11,383 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:11,390 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:11,390 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:12,170 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:17,030 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:17,030 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:18,181 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:45:18,181 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:45:18,604 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:20,040 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:20,040 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:20,486 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:20,658 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:33,468 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:45:33,468 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:45:41,591 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:41,591 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:41,596 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:41,597 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:42,386 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:42,834 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:42,834 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:42,840 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:42,841 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:43,659 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:46,111 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:46,111 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:46,117 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:46,117 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:46,895 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:48,671 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:48,671 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:48,676 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:48,677 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:49,497 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:45:49,497 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:45:49,739 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:50,558 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:45:50,558 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:45:52,772 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:54,776 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:56,021 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:45:56,021 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:45:56,451 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:45:56,785 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:45:58,791 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:00,134 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: resume
+2022-12-09 13:46:00,134 INFO    HandlerThread:44063 [handler.py:handle_request_resume():687] starting system metrics thread
+2022-12-09 13:46:02,802 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:04,745 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:46:04,745 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:46:04,809 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:06,814 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:08,818 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:10,626 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: pause
+2022-12-09 13:46:10,626 INFO    HandlerThread:44063 [handler.py:handle_request_pause():696] stopping system metrics thread
+2022-12-09 13:46:10,823 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:11,037 DEBUG   SenderThread:44063 [sender.py:send():301] send: stats
+2022-12-09 13:46:12,828 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:19,986 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:46:19,987 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:46:35,237 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 13:46:35,238 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 13:46:48,951 DEBUG   SenderThread:44063 [sender.py:send():301] send: exit
+2022-12-09 13:46:48,951 INFO    SenderThread:44063 [sender.py:send_exit():437] handling exit code: 0
+2022-12-09 13:46:48,951 INFO    SenderThread:44063 [sender.py:send_exit():439] handling runtime: 41
+2022-12-09 13:46:48,953 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:48,953 INFO    SenderThread:44063 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-12-09 13:46:48,953 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-summary.json
+2022-12-09 13:46:48,953 INFO    SenderThread:44063 [sender.py:send_exit():445] send defer
+2022-12-09 13:46:48,954 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:48,954 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,955 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 0
+2022-12-09 13:46:48,955 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,955 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 0
+2022-12-09 13:46:48,955 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 1
+2022-12-09 13:46:48,956 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,956 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 1
+2022-12-09 13:46:48,956 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,956 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 1
+2022-12-09 13:46:48,956 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 2
+2022-12-09 13:46:48,956 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,956 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 2
+2022-12-09 13:46:48,957 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,957 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 2
+2022-12-09 13:46:48,957 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 3
+2022-12-09 13:46:48,957 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,957 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 3
+2022-12-09 13:46:48,957 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,957 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 3
+2022-12-09 13:46:48,957 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 4
+2022-12-09 13:46:48,958 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,958 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 4
+2022-12-09 13:46:48,958 DEBUG   SenderThread:44063 [sender.py:send():301] send: summary
+2022-12-09 13:46:48,958 INFO    SenderThread:44063 [sender.py:_save_file():1155] saving file wandb-summary.json with policy end
+2022-12-09 13:46:48,958 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,958 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 4
+2022-12-09 13:46:48,958 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 5
+2022-12-09 13:46:48,958 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,958 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 5
+2022-12-09 13:46:48,958 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,958 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 5
+2022-12-09 13:46:48,958 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 6
+2022-12-09 13:46:48,959 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:48,959 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 6
+2022-12-09 13:46:48,959 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:48,959 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 6
+2022-12-09 13:46:49,058 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:49,958 INFO    Thread-13 :44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-summary.json
+2022-12-09 13:46:50,536 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 7
+2022-12-09 13:46:50,536 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:50,537 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:50,537 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 7
+2022-12-09 13:46:50,537 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:50,537 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 7
+2022-12-09 13:46:50,537 INFO    SenderThread:44063 [dir_watcher.py:finish():362] shutting down directory watcher
+2022-12-09 13:46:50,642 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:50,960 INFO    SenderThread:44063 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:50,960 INFO    SenderThread:44063 [dir_watcher.py:finish():392] scan: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files
+2022-12-09 13:46:50,960 INFO    SenderThread:44063 [dir_watcher.py:finish():406] scan save: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/requirements.txt requirements.txt
+2022-12-09 13:46:50,960 INFO    SenderThread:44063 [dir_watcher.py:finish():406] scan save: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log output.log
+2022-12-09 13:46:50,961 INFO    SenderThread:44063 [dir_watcher.py:finish():406] scan save: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/config.yaml config.yaml
+2022-12-09 13:46:50,962 INFO    SenderThread:44063 [dir_watcher.py:finish():406] scan save: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-summary.json wandb-summary.json
+2022-12-09 13:46:50,962 INFO    SenderThread:44063 [dir_watcher.py:finish():406] scan save: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-metadata.json wandb-metadata.json
+2022-12-09 13:46:50,962 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 8
+2022-12-09 13:46:50,962 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:50,962 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:50,962 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 8
+2022-12-09 13:46:50,964 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:50,965 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 8
+2022-12-09 13:46:50,965 INFO    SenderThread:44063 [file_pusher.py:finish():168] shutting down file pusher
+2022-12-09 13:46:51,064 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:51,064 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:51,175 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:51,178 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:51,287 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:51,287 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:51,392 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:51,392 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:51,496 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: poll_exit
+2022-12-09 13:46:51,496 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: poll_exit
+2022-12-09 13:46:51,717 INFO    Thread-47 :44063 [upload_job.py:push():139] Uploaded file /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/config.yaml
+2022-12-09 13:46:51,717 INFO    Thread-48 :44063 [upload_job.py:push():139] Uploaded file /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/wandb-summary.json
+2022-12-09 13:46:51,786 INFO    Thread-45 :44063 [upload_job.py:push():139] Uploaded file /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/requirements.txt
+2022-12-09 13:46:52,006 INFO    Thread-46 :44063 [upload_job.py:push():139] Uploaded file /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/files/output.log
+2022-12-09 13:46:52,209 INFO    Thread-12 :44063 [sender.py:transition_state():458] send defer: 9
+2022-12-09 13:46:52,210 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:52,210 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 9
+2022-12-09 13:46:52,210 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:52,210 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 9
+2022-12-09 13:46:52,769 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 10
+2022-12-09 13:46:52,769 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:52,769 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 10
+2022-12-09 13:46:52,769 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:52,769 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 10
+2022-12-09 13:46:52,769 INFO    SenderThread:44063 [sender.py:transition_state():458] send defer: 11
+2022-12-09 13:46:52,770 DEBUG   SenderThread:44063 [sender.py:send():301] send: final
+2022-12-09 13:46:52,770 DEBUG   SenderThread:44063 [sender.py:send():301] send: footer
+2022-12-09 13:46:52,770 DEBUG   HandlerThread:44063 [handler.py:handle_request():138] handle_request: defer
+2022-12-09 13:46:52,770 INFO    HandlerThread:44063 [handler.py:handle_request_defer():161] handle defer: 11
+2022-12-09 13:46:52,771 DEBUG   SenderThread:44063 [sender.py:send_request():315] send_request: defer
+2022-12-09 13:46:52,771 INFO    SenderThread:44063 [sender.py:send_request_defer():454] handle sender defer: 11
+2022-12-09 13:46:54,045 WARNING StreamThr :44063 [internal.py:is_dead():385] Internal process exiting, parent pid 34206 disappeared
+2022-12-09 13:46:54,045 ERROR   StreamThr :44063 [internal.py:wandb_internal():147] Internal process shutdown.
+2022-12-09 13:46:54,772 INFO    HandlerThread:44063 [handler.py:finish():807] shutting down handler
+2022-12-09 13:46:54,774 INFO    SenderThread:44063 [sender.py:finish():1315] shutting down sender
+2022-12-09 13:46:54,774 INFO    SenderThread:44063 [file_pusher.py:finish():168] shutting down file pusher
+2022-12-09 13:46:54,774 INFO    SenderThread:44063 [file_pusher.py:join():173] waiting for file pusher
+2022-12-09 13:46:54,779 INFO    WriterThread:44063 [datastore.py:close():279] close: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_133234-6rhrtdx7/run-6rhrtdx7.wandb

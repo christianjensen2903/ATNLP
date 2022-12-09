@@ -5,7 +5,7 @@ import matplotlib.ticker as ticker
 import numpy as np
 
 
-def showPlot(points):
+def show_plot(points):
     plt.figure()
     fig, ax = plt.subplots()
     # this locator puts ticks at regular intervals
