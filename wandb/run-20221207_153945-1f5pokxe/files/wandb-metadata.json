@@ -1,0 +1,70 @@
+{
+    "os": "Linux-5.4.219-126.411.amzn2.x86_64-x86_64-with-glibc2.28",
+    "python": "3.9.13",
+    "heartbeatAt": "2022-12-07T15:39:45.968724",
+    "startedAt": "2022-12-07T15:39:45.685876",
+    "docker": null,
+    "cuda": null,
+    "args": null,
+    "state": "running",
+    "program": "<python with no main file>",
+    "host": "p-ec00d141-8917-4313-a10a-78395d2ec852",
+    "username": "root",
+    "executable": "/usr/local/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 3499.92775,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3499.951,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.997,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3500.005,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.936,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.991,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.733,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.871,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 3499.938,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 99.98826217651367,
+        "used": 40.87921142578125
+    },
+    "memory": {
+        "total": 61.81357955932617
+    }
+}
