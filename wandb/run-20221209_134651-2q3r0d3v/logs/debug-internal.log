@@ -2301,3 +2301,28 @@
 2022-12-09 17:11:05,916 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
 2022-12-09 17:11:21,194 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
 2022-12-09 17:11:21,196 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:11:34,578 DEBUG   SenderThread:46109 [sender.py:send():301] send: stats
+2022-12-09 17:11:36,463 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:11:36,464 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:11:51,714 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:11:51,715 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:12:06,965 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:12:06,966 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:12:12,339 DEBUG   SenderThread:46109 [sender.py:send():301] send: stats
+2022-12-09 17:12:22,226 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:12:22,227 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:12:37,477 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:12:37,477 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:12:50,199 DEBUG   SenderThread:46109 [sender.py:send():301] send: stats
+2022-12-09 17:12:52,732 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:12:52,732 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:13:07,986 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:13:07,986 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:13:23,231 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:13:23,232 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
+2022-12-09 17:13:28,105 DEBUG   SenderThread:46109 [sender.py:send():301] send: stats
+2022-12-09 17:13:29,587 INFO    Thread-42 :46109 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_134704-15z4thmq/files/output.log
+2022-12-09 17:13:31,593 INFO    Thread-42 :46109 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_134704-15z4thmq/files/output.log
+2022-12-09 17:13:33,604 INFO    Thread-42 :46109 [dir_watcher.py:_on_file_modified():292] file/dir modified: /Users/christianjensen/Documents/ATNLP/wandb/run-20221209_134704-15z4thmq/files/output.log
+2022-12-09 17:13:38,491 DEBUG   HandlerThread:46109 [handler.py:handle_request():138] handle_request: stop_status
+2022-12-09 17:13:38,492 DEBUG   SenderThread:46109 [sender.py:send_request():315] send_request: stop_status
