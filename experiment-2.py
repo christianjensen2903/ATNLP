@@ -3,8 +3,6 @@ import scan_dataset
 import models
 import pipeline
 import torch
-import wandb
-import os
 from matplotlib import pyplot as plt
 
 input_lang = scan_dataset.Lang()
@@ -43,13 +41,7 @@ experiment_best = {
     'ATTENTION': True, # True or False
 }
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f'Using device: {device}')
-
-
-WANDB_KEY = os.environ.get('WANDB_KEY')
-
-wandb.init(project="experiment-2", entity="atnlp", api_key=WANDB_KEY)
+device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
 
 results = []
 # Train 5 times and average the results
@@ -60,9 +52,7 @@ for _ in range(5):
     encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
-avg_accuracy = sum(results) / len(results)
-print('Average accuracy for overall best: {}'.format(avg_accuracy))
-wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
+print('Average accuracy for overall best: {}'.format(sum(results) / len(results)))
 
 
 results = []
@@ -74,9 +64,7 @@ for _ in range(5):
     encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
-avg_accuracy = sum(results) / len(results)
-print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
+print('Average accuracy for experiment best: {}'.format(sum(results) / len(results)))
 
 
 
