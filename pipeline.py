@@ -105,12 +105,10 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
-            input_tensor.to(device)
-            target_tensor.to(device)
             
             pred = []
 
-            encoder_hidden, encoder_hidden_all = encoder(input_tensor)
+            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
 
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
