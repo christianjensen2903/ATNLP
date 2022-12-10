@@ -1,9 +1,10 @@
-from torch.utils.data import DataLoader
 import scan_dataset
 import models
 import pipeline
 import torch
 from matplotlib import pyplot as plt
+import wandb
+import os
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -23,6 +24,8 @@ test_dataset = scan_dataset.ScanDataset(
 )
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
+
+n_iter = 100
 
 
 overall_best = {
@@ -45,16 +48,22 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
+WANDB_KEY = os.environ.get('WANDB_KEY')
+
+wandb.init(project="experiment-1", entity="atnlp", api_key=WANDB_KEY)
+
 results = []
 # Train 5 times and average the results
 for _ in range(5):
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],overall_best['ATTENTION']).to(device)
 
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
 
-print('Average accuracy for overall best: {}'.format(sum(results) / len(results)))
+avg_accuracy = sum(results) / len(results)
+print('Average accuracy for overall best: {}'.format(avg_accuracy))
+wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
 results = []
@@ -63,10 +72,13 @@ for _ in range(5):
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device, experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT']).to(device)
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'], experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
 
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
-print('Average accuracy for experiement best: {}'.format(sum(results) / len(results)))
+avg_accuracy = sum(results) / len(results)
+print('Average accuracy for experiment best: {}'.format(avg_accuracy))
+wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
+
 
 
 
@@ -100,7 +112,7 @@ for split in splits:
         encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
 
-        encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+        encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
         results[split].append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=100, verbose=False))
 
 
