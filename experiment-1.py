@@ -3,8 +3,8 @@ import models
 import pipeline
 import torch
 from matplotlib import pyplot as plt
-# import wandb
-import os
+import wandb
+import numpy as np
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -48,10 +48,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
-# WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
-# wandb.login()
+wandb.login()
 
-# wandb.init(project="experiment-1", entity="atnlp")
+wandb.init(project="experiment-1", entity="atnlp")
 
 results = []
 # Train 5 times and average the results
@@ -64,7 +63,7 @@ for _ in range(5):
 
 avg_accuracy = sum(results) / len(results)
 print('Average accuracy for overall best: {}'.format(avg_accuracy))
-# wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
+wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
 results = []
@@ -117,9 +116,22 @@ for split in splits:
         results[split].append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=100, verbose=False))
 
 
+# Average results
+mean_results = {}
+for split, result in results.items():
+    mean_results[split] = sum(result) / len(result)
+
+# Find standard deviation
+std_results = {}
+for split, result in results.items():
+    std_results[split] = np.std(result)
+
 # Plot bar chart
-plt.bar(range(len(results)), list(results.values()), align='center')
-plt.xticks(range(len(results)), list(results.keys()))
+plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(std_results.values()), capsize=5)
+plt.xlabel('Percent of commands used for training')
+plt.ylabel('Accuracy on new commands (%)')
+
+wandb.log({"Percent commands": plt})
 plt.show()
 
 # Print results

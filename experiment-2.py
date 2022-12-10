@@ -6,6 +6,7 @@ import torch
 import wandb
 import os
 from matplotlib import pyplot as plt
+import numpy as np
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -25,6 +26,8 @@ test_dataset = scan_dataset.ScanDataset(
 )
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
+
+n_iter = 100
 
 
 overall_best = {
@@ -49,6 +52,8 @@ print(f'Using device: {device}')
 
 # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
 
+wandb.login()
+
 wandb.init(project="experiment-2", entity="atnlp")
 
 results = []
@@ -57,7 +62,7 @@ for _ in range(5):
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],overall_best['ATTENTION']).to(device)
 
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
 avg_accuracy = sum(results) / len(results)
@@ -71,7 +76,7 @@ for _ in range(5):
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device, experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT']).to(device)
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'], experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
 
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
 avg_accuracy = sum(results) / len(results)
@@ -100,7 +105,7 @@ for _ in range(5):
 
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
 
     # Evaluate on various lengths
     for split in splits:
@@ -117,9 +122,22 @@ for _ in range(5):
         results[split].append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
 
+# Average results
+mean_results = {}
+for split, result in results.items():
+    mean_results[split] = sum(result) / len(result)
+
+# Find standard deviation
+std_results = {}
+for split, result in results.items():
+    std_results[split] = np.std(result)
+
 # Plot bar chart
-plt.bar(range(len(results)), list(results.values()), align='center')
-plt.xticks(range(len(results)), list(results.keys()))
+plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(std_results.values()), capsize=5)
+plt.xlabel('Ground-truth action sequence length')
+plt.ylabel('Accuracy on new commands (%)')
+
+wandb.log({"Sequence length": plt})
 plt.show()
 
 # Print results
@@ -147,12 +165,11 @@ for _ in range(5):
     )
 
     encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
-    decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
+    decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'], attention=overall_best['ATTENTION'], device=device).to(device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001, device=device)
 
     # Evaluate on various lengths
     for split in splits:
-        results[split] = []
         
         test_dataset = scan_dataset.ScanDataset(
             split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
@@ -164,7 +181,8 @@ for _ in range(5):
         # Filter out sequences with different command lengths
         new_X, new_y = [], []
         for i in range(len(test_dataset)):
-            X, y = test_dataset.convert_to_tensor(test_dataset[i])
+            X, y = test_dataset[i]
+            X, y = test_dataset.convert_to_tensor(X,y)
             if len((X)) == split:
                 new_X.append(test_dataset[i][0])
                 new_y.append(test_dataset[i][1])
@@ -172,13 +190,29 @@ for _ in range(5):
         test_dataset.X = new_X
         test_dataset.y = new_y
 
+        accuracy = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
 
-        results[split].append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+        if split not in results:
+            results[split] = []
+        results[split].append(accuracy)
 
+
+# Average results
+mean_results = {}
+for split, result in results.items():
+    mean_results[split] = sum(result) / len(result)
+
+# Find standard deviation
+std_results = {}
+for split, result in results.items():
+    std_results[split] = np.std(result)
 
 # Plot bar chart
-plt.bar(range(len(results)), list(results.values()), align='center')
-plt.xticks(range(len(results)), list(results.keys()))
+plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(std_results.values()), capsize=5)
+plt.xlabel('Command length')
+plt.ylabel('Accuracy on new commands (%)')
+
+wandb.log({"Command length": plt})
 plt.show()
 
 # Print results

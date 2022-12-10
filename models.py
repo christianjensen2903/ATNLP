@@ -174,7 +174,7 @@ class DecoderRNN(nn.Module):
             self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 
     def forward(self, input, hidden, encoder_hiddens=None):
-        assert encoder_hiddens if self.attention else True # If attention is used, all encoder hidden states must be provided
+        assert encoder_hiddens is not None if self.attention else True # If attention is used, all encoder hidden states must be provided
         if self.attention:
             output, hidden = self.decoder_cell(input, hidden, encoder_hiddens)
         else:
