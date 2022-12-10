@@ -3,7 +3,7 @@ import models
 import pipeline
 import torch
 from matplotlib import pyplot as plt
-import wandb
+# import wandb
 import os
 
 input_lang = scan_dataset.Lang()
@@ -44,14 +44,14 @@ experiment_best = {
     'ATTENTION': False,
 }
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
 # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
-wandb.login()
+# wandb.login()
 
-wandb.init(project="experiment-1", entity="atnlp")
+# wandb.init(project="experiment-1", entity="atnlp")
 
 results = []
 # Train 5 times and average the results
@@ -64,7 +64,7 @@ for _ in range(5):
 
 avg_accuracy = sum(results) / len(results)
 print('Average accuracy for overall best: {}'.format(avg_accuracy))
-wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
+# wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
 results = []

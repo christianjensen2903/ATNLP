@@ -34,7 +34,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     for di in range(target_length):
         # Decode next token
         decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_hidden_all)
-            
+        
         loss += criterion(decoder_output, target_tensor[di])
 
         # If teacher forcing is used, the next input is the target
@@ -71,10 +71,7 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
 
-        input_tensor.to(device)
-        target_tensor.to(device)
-
-        loss = train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
+        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
         print_loss_total += loss
         plot_loss_total += loss
 
