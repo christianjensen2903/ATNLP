@@ -4,11 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class EncoderCell(nn.Module):
-    def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
         super(EncoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
         self.RNN_type = rnn_type
+        self.device = device
 
         self.embedding = nn.Embedding(input_size, self.hidden_size)
 
@@ -30,18 +31,18 @@ class EncoderCell(nn.Module):
     def init_hidden(self):
         if self.RNN_type == 'LSTM':
             return (
-                torch.zeros(self.n_layers, 1, self.hidden_size),
-                torch.zeros(self.n_layers, 1, self.hidden_size)
+                torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device),
+                torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device)
             )
         else:
-            return torch.zeros(self.n_layers, 1, self.hidden_size)
+            return torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device)
 
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, device, n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(self, input_size, hidden_size, device='cpu', n_layers=1, rnn_type='RNN', dropout_p=0.1):
         super(EncoderRNN, self).__init__()
         self.device = device
-        self.encoder_cell = EncoderCell(input_size, hidden_size, n_layers, rnn_type, dropout_p)
+        self.encoder_cell = EncoderCell(input_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 
     def forward(self, input):
         encoder_hidden = self.encoder_cell.init_hidden()
@@ -62,7 +63,7 @@ class EncoderRNN(nn.Module):
 
 
 class DecoderCell(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
         super(DecoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -95,7 +96,7 @@ class DecoderCell(nn.Module):
 
 
 class AttnDecoderCell(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
         super(AttnDecoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -108,9 +109,9 @@ class AttnDecoderCell(nn.Module):
             num_layers=self.n_layers,
             dropout=dropout_p
         )
-        self.W = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size)))
-        self.U = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size)))
-        self.v = nn.Parameter(torch.randn((self.hidden_size, 1)))
+        self.W = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size), device=device))
+        self.U = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size), device=device))
+        self.v = nn.Parameter(torch.randn((self.hidden_size, 1), device=device))
 
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
 
@@ -163,14 +164,14 @@ class AttnDecoderCell(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False, device='cpu'):
         super(DecoderRNN, self).__init__()
 
         self.attention = attention
         if attention:
-            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p)
+            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
         else:
-            self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p)
+            self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 
     def forward(self, input, hidden, encoder_hiddens=None):
         assert encoder_hiddens if self.attention else True # If attention is used, all encoder hidden states must be provided

@@ -42,6 +42,7 @@ experiment_best = {
 }
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
 
 
 results = []
@@ -51,7 +52,7 @@ for _ in range(5):
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],overall_best['ATTENTION']).to(device)
 
     encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
-    results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+    results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
 
 print('Average accuracy for overall best: {}'.format(sum(results) / len(results)))
 

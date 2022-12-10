@@ -70,6 +70,9 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
 
+        input_tensor.to(device)
+        target_tensor.to(device)
+
         loss = train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
         print_loss_total += loss
         plot_loss_total += loss
@@ -101,6 +104,8 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
+            input_tensor.to(device)
+            target_tensor.to(device)
             
             pred = []
 
