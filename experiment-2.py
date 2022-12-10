@@ -47,9 +47,9 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
-WANDB_KEY = os.environ.get('WANDB_KEY')
+# WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
 
-wandb.init(project="experiment-2", entity="atnlp", api_key=WANDB_KEY)
+wandb.init(project="experiment-2", entity="atnlp")
 
 results = []
 # Train 5 times and average the results
