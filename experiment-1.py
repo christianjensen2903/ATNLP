@@ -33,7 +33,7 @@ overall_best = {
     'ATTENTION': False, # True or False
 }
 
-experiement_best = {
+experiment_best = {
     'HIDDEN_SIZE': 200,
     'RNN_TYPE': 'LSTM',
     'N_LAYERS': 2,
@@ -59,8 +59,8 @@ print('Average accuracy for overall best: {}'.format(sum(results) / len(results)
 results = []
 # Train 5 times and average the results
 for _ in range(5):
-    encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiement_best['HIDDEN_SIZE'], device, experiement_best['N_LAYERS'], experiement_best['RNN_TYPE'], experiement_best['DROPOUT']).to(device)
-    decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiement_best['HIDDEN_SIZE'], experiement_best['N_LAYERS'], experiement_best['RNN_TYPE'], experiement_best['DROPOUT'],experiement_best['ATTENTION']).to(device)
+    encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device, experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT']).to(device)
+    decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'], experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
 
     encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
     results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
@@ -97,7 +97,7 @@ for split in splits:
         )
 
         encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiement_best['DROPOUT'],experiement_best['ATTENTION']).to(device)
+        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiment_best['DROPOUT'],experiment_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
         results[split].append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=100, verbose=False))
