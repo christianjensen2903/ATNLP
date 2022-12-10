@@ -10,8 +10,7 @@ class ScanSplit(Enum):
     SIMPLE_SPLIT = 'simple_split'
     LENGTH_SPLIT = 'length_split'
     FEW_SHOT_SPLIT = 'few_shot_split'
-    ADD_PRIM_JUMP_SPLIT = 'add_prim_split'
-    ADD_PRIM_TURNLEFT_SPLIT = 'add_prim_split' # shouldn't have same value => if condition won't happen
+    ADD_PRIM_SPLIT = 'add_prim_split'
 
 class Lang:
     def __init__(self):
@@ -56,13 +55,13 @@ class Lang:
 
 
 class ScanDataset(Dataset):
-    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True):
+    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation: str = None):
         
         self.input_lang = input_lang
         self.output_lang = output_lang
 
 
-        self.X, self.y = self._get_data(split, train)
+        self.X, self.y = self._get_data(split, split_variation, train)
 
 
     def __len__(self):
@@ -84,21 +83,29 @@ class ScanDataset(Dataset):
         return (input_string, target_string)
     
 
-    def _get_data(self, split: ScanSplit, train: bool = True):
+    def _get_data(self, split: ScanSplit, split_variation: str = None, train: bool = True):
         """Retrieve the right data for the selected split"""
         
         if split == ScanSplit.SIMPLE_SPLIT:
-            X_train, y_train = self._extract_data_from_file('SCAN/simple_split/tasks_train_simple.txt')
-            X_test, y_test = self._extract_data_from_file('SCAN/simple_split/tasks_test_simple.txt')
+            valid_variations = ['p1', 'p2', 'p4', 'p8', 'p16', 'p32', 'p64']
+            if split_variation and split_variation in valid_variations:
+                X_train, y_train = self._extract_data_from_file(f'size_variations/tasks_train_simple_{split_variation}.txt', split)
+                X_test, y_test = self._extract_data_from_file(f'size_variations/tasks_test_simple_{split_variation}.txt', split)
+            elif split_variation:
+                raise Exception(f'Not a valid split variation. Valid variations are: {valid_variations}')
+            else:
+                X_train, y_train = self._extract_data_from_file('tasks_train_simple.txt', split)
+                X_test, y_test = self._extract_data_from_file('tasks_test_simple.txt', split)
         elif split == ScanSplit.LENGTH_SPLIT:
-            X_train, y_train = self._extract_data_from_file('SCAN/length_split/tasks_train_length.txt')
-            X_test, y_test = self._extract_data_from_file('SCAN/length_split/tasks_test_length.txt')
-        elif split == ScanSplit.ADD_PRIM_JUMP_SPLIT:
-            X_train, y_train = self._extract_data_from_file('SCAN/add_prim_split/tasks_train_addprim_jump.txt')
-            X_test, y_test = self._extract_data_from_file('SCAN/add_prim_split/tasks_test_addprim_jump.txt')
-        elif split == ScanSplit.ADD_PRIM_TURNLEFT_SPLIT:
-            X_train, y_train = self._extract_data_from_file('SCAN/add_prim_split/tasks_train_addprim_turn_left.txt')
-            X_test, y_test = self._extract_data_from_file('SCAN/add_prim_split/tasks_test_addprim_turn_left.txt')
+            X_train, y_train = self._extract_data_from_file('tasks_train_length.txt', split)
+            X_test, y_test = self._extract_data_from_file('tasks_test_length.txt', split)
+        elif split == ScanSplit.ADD_PRIM_SPLIT:
+            valid_variations = ['jump', 'turn_left']
+            if split_variation and split_variation in valid_variations:
+                X_train, y_train = self._extract_data_from_file(f'tasks_train_addprim_{split_variation}.txt', split)
+                X_test, y_test = self._extract_data_from_file(f'tasks_test_addprim_{split_variation}.txt', split)
+            else:
+                raise Exception(f'A valid split variation must be provided for this split. Valid variations are: {valid_variations}')
         else:
             raise Exception('Split not implemented')
         
@@ -118,9 +125,9 @@ class ScanDataset(Dataset):
 
         return X,y
         
-    def _extract_data_from_file(self, filepath: str):
+    def _extract_data_from_file(self, filepath: str, split: ScanSplit):
         """Get X and y from SCAN file"""
-        with open(filepath) as f:
+        with open(f'SCAN/{split.value}/{filepath}') as f:
             txt_data = f.readlines()
 
         # Format is in IN: ... OUT: ...

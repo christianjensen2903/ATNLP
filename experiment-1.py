@@ -34,12 +34,20 @@ overall_best = {
     'ATTENTION': False, # True or False
 }
 
+experiement_best = {
+    'HIDDEN_SIZE': 200,
+    'RNN_TYPE': 'LSTM',
+    'N_LAYERS': 2,
+    'DROPOUT': 0,
+    'ATTENTION': False,
+}
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device, overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(device)
 decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'], overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],overall_best['ATTENTION']).to(device)
 
-encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 10000, print_every=100, learning_rate=0.001, device=device)
+encoder, decoder = pipeline.train(train_dataset, encoder, decoder, 1000, print_every=100, learning_rate=0.001, device=device)
 
 pipeline.evaluate(test_dataset, encoder, decoder, max_length=100, verbose=True)
 
