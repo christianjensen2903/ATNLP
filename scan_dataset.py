@@ -40,8 +40,13 @@ class Lang:
 
     def indexes_from_sentence(self, sentence: str):
         """Get word ids from sentence"""
-        indexes = [self.word2index.get(word,OOV_token) for word in sentence.split(' ')]
+        indexes = [self.word2index.get(word,OOV_token) for word in sentence.split()]
         return indexes
+
+
+    def sentence_from_indexes(self, indexes: list):
+        """Get sentence from word ids"""
+        return ' '.join([self.index2word[index] for index in indexes])
 
     def tensor_from_sentence(self, sentence:str):
         """Convert sentence to torch tensor"""
@@ -70,6 +75,12 @@ class ScanDataset(Dataset):
         input_tensor = self.input_lang.tensor_from_sentence(X)
         target_tensor = self.output_lang.tensor_from_sentence(y)
         return (input_tensor, target_tensor)
+
+
+    def convert_to_string(self, X, y):
+        input_string = self.input_lang.sentence_from_indexes(X)
+        target_string = self.output_lang.sentence_from_indexes(y)
+        return (input_string, target_string)
     
 
     def _get_data(self, split: ScanSplit, train: bool = True):
