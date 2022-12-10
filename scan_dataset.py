@@ -51,6 +51,7 @@ class Lang:
     def tensor_from_sentence(self, sentence:str):
         """Convert sentence to torch tensor"""
         indexes = self.indexes_from_sentence(sentence)
+        indexes.append(EOS_token)
         return torch.tensor(indexes, dtype=torch.long).view(-1, 1)
 
 

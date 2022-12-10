@@ -57,7 +57,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
 
 
 
-def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2, verbose = False):
+def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2, verbose = False, plot=False):
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
@@ -70,7 +70,7 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
 
-        loss = train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion)
+        loss = train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -85,14 +85,15 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
 
-    helper.show_plot(plot_losses)
+    if plot:
+        helper.show_plot(plot_losses)
 
     return encoder, decoder
 
 
 
 
-def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False, batch_size=1, shuffle=False):
+def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
     
     n_correct = [] # number of correct predictions
     
@@ -123,7 +124,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False,
 
             pred = np.array(pred)
             ground_truth = target_tensor.detach().cpu().numpy().squeeze()
-
+            
             if len(pred) == len(ground_truth):
                 n_correct.append(np.all(pred == ground_truth))
             else:
