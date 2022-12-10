@@ -55,7 +55,7 @@ class Lang:
 
 
 class ScanDataset(Dataset):
-    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation: str = None):
+    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation = None):
         
         self.input_lang = input_lang
         self.output_lang = output_lang
@@ -83,7 +83,7 @@ class ScanDataset(Dataset):
         return (input_string, target_string)
     
 
-    def _get_data(self, split: ScanSplit, split_variation: str = None, train: bool = True):
+    def _get_data(self, split: ScanSplit, split_variation = None, train: bool = True):
         """Retrieve the right data for the selected split"""
         
         if split == ScanSplit.SIMPLE_SPLIT:
@@ -97,8 +97,18 @@ class ScanDataset(Dataset):
                 X_train, y_train = self._extract_data_from_file('tasks_train_simple.txt', split)
                 X_test, y_test = self._extract_data_from_file('tasks_test_simple.txt', split)
         elif split == ScanSplit.LENGTH_SPLIT:
+
             X_train, y_train = self._extract_data_from_file('tasks_train_length.txt', split)
             X_test, y_test = self._extract_data_from_file('tasks_test_length.txt', split)
+
+            if split_variation and isinstance(split_variation, int):
+                # filter test data based on length
+                X_test = [x for x in X_test if len(x.split()) == split_variation]
+                y_test = [y for y in y_test if len(y.split()) == split_variation]
+
+            elif split_variation:
+                raise Exception('Split variation must be an integer')
+
         elif split == ScanSplit.ADD_PRIM_SPLIT:
             valid_variations = ['jump', 'turn_left']
             if split_variation and split_variation in valid_variations:
