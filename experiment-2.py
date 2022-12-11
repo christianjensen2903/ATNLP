@@ -116,8 +116,9 @@ def test_sequence_length():
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(
             device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
-                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], experiment_best['DROPOUT'],
-                                    experiment_best['ATTENTION']).to(device)
+                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
+                                    overall_best['ATTENTION']).to(device)
+
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device)
 
@@ -247,9 +248,9 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
-    run_overall_best()
+    # run_overall_best()
     # run_experiment_best()
-    # test_sequence_length()
+    test_sequence_length()
     # test_command_length()
 
 
