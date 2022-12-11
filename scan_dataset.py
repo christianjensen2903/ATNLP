@@ -14,7 +14,7 @@ class ScanSplit(Enum):
 
 class Lang:
     def __init__(self):
-        self.word2index = {}
+        self.word2index = {"SOS": SOS_token, "EOS": EOS_token, "OOV": OOV_token}
         self.word2count = {}
         self.index2word = {SOS_token: "SOS", EOS_token: "EOS", OOV_token: 'OOV'}
         self.n_words = len(self.index2word)  # Count tokens

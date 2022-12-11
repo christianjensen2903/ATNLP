@@ -6,7 +6,7 @@ import random
 from tqdm import tqdm
 import helper
 import scan_dataset
-import wandb
+#import wandb
 
 
 
@@ -50,6 +50,9 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
             break
 
     loss.backward()
+    
+    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
+    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
 
     encoder_optimizer.step()
     decoder_optimizer.step()
@@ -85,8 +88,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
 
-            if log_wandb:
-                wandb.log({"avg_loss": plot_loss_avg})
+            #if log_wandb:
+                #wandb.log({"avg_loss": plot_loss_avg})
             plot_loss_total = 0
 
     if plot:
