@@ -73,6 +73,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
     for iteration in tqdm(range(1, n_iters + 1), total=n_iters, leave=False, desc="Training"):
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
+        input_tensor = input_tensor.reshape(-1)
+        target_tensor.reshape(-1)
 
         loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
         print_loss_total += loss
