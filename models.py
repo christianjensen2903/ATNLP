@@ -1,7 +1,7 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class EncoderCell(nn.Module):
     def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
@@ -49,12 +49,13 @@ class EncoderRNN(nn.Module):
 
         input_length = input.size(0)
 
-        encoder_hidden_all = torch.zeros(input_length, self.encoder_cell.hidden_size, device=self.device) # Stores all hidden states
+        encoder_hidden_all = torch.zeros(input_length, self.encoder_cell.hidden_size,
+                                         device=self.device)  # Stores all hidden states
 
         for ei in range(input_length):
-            _, encoder_hidden =  self.encoder_cell(
+            _, encoder_hidden = self.encoder_cell(
                 input[ei], encoder_hidden)
-            if  self.encoder_cell.RNN_type == 'LSTM':
+            if self.encoder_cell.RNN_type == 'LSTM':
                 encoder_hidden_all[ei] = encoder_hidden[0][0, 0]
             else:
                 encoder_hidden_all[ei] = encoder_hidden[0, 0]
@@ -88,11 +89,10 @@ class DecoderCell(nn.Module):
         output = self.embedding(decoder_input).view(1, 1, -1)
         output = self.dropout(output)
         output = F.relu(output)
-        
+
         output, hidden = self.rnn(output, hidden)
         output = self.softmax(self.out(output[0]))
         return output, hidden
-
 
 
 class AttnDecoderCell(nn.Module):
@@ -105,7 +105,7 @@ class AttnDecoderCell(nn.Module):
 
         self.rnn = nn.__dict__[self.RNN_type](
             input_size=self.hidden_size,
-            hidden_size=self.hidden_size*2,
+            hidden_size=self.hidden_size * 2,
             num_layers=self.n_layers,
             dropout=dropout_p
         )
@@ -117,7 +117,7 @@ class AttnDecoderCell(nn.Module):
 
         self.dropout = nn.Dropout(dropout_p)
 
-        self.out = nn.Linear(self.hidden_size*2, output_size)
+        self.out = nn.Linear(self.hidden_size * 2, output_size)
 
     def e(self, g, h):
         """Computes the similarity between the previous decoder hidden state g and an encoder hidden state h"""
@@ -135,8 +135,7 @@ class AttnDecoderCell(nn.Module):
         for j in range(T):
             denominator += torch.exp(self.e(input_hidden, encoder_hiddens[j]))
 
-        return numerator/denominator
-
+        return numerator / denominator
 
     def forward(self, input, input_hidden, encoder_hiddens):
 
@@ -151,9 +150,9 @@ class AttnDecoderCell(nn.Module):
             h_t = encoder_hiddens[t]
             c_i += alpha_it * h_t
 
-        hidden = torch.concat((input_hidden, c_i), dim=2) # Concatenate the context vector and the decoder hidden state
-        
-        output, hidden = self.rnn(embedded, hidden) 
+        hidden = torch.concat((input_hidden, c_i), dim=2)  # Concatenate the context vector and the decoder hidden state
+
+        output, hidden = self.rnn(embedded, hidden)
 
         output = F.log_softmax(self.out(output[0]), dim=1)
 
@@ -164,7 +163,8 @@ class AttnDecoderCell(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False, device='cpu'):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False,
+                 device='cpu'):
         super(DecoderRNN, self).__init__()
 
         self.attention = attention
@@ -174,10 +174,10 @@ class DecoderRNN(nn.Module):
             self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 
     def forward(self, input, hidden, encoder_hiddens=None):
-        assert encoder_hiddens is not None if self.attention else True # If attention is used, all encoder hidden states must be provided
+        assert encoder_hiddens is not None if self.attention else True  # If attention is used, all encoder hidden states must be provided
         if self.attention:
             output, hidden = self.decoder_cell(input, hidden, encoder_hiddens)
         else:
             output, hidden = self.decoder_cell(input, hidden)
-            
+
         return output, hidden

@@ -6,11 +6,13 @@ SOS_token = 0
 EOS_token = 1
 OOV_token = 2
 
+
 class ScanSplit(Enum):
     SIMPLE_SPLIT = 'simple_split'
     LENGTH_SPLIT = 'length_split'
     FEW_SHOT_SPLIT = 'few_shot_split'
     ADD_PRIM_SPLIT = 'add_prim_split'
+
 
 class Lang:
     def __init__(self):
@@ -39,15 +41,14 @@ class Lang:
 
     def indexes_from_sentence(self, sentence: str):
         """Get word ids from sentence"""
-        indexes = [self.word2index.get(word,OOV_token) for word in sentence.split()]
+        indexes = [self.word2index.get(word, OOV_token) for word in sentence.split()]
         return indexes
-
 
     def sentence_from_indexes(self, indexes: list):
         """Get sentence from word ids"""
         return ' '.join([self.index2word[index] for index in indexes])
 
-    def tensor_from_sentence(self, sentence:str):
+    def tensor_from_sentence(self, sentence: str):
         """Convert sentence to torch tensor"""
         indexes = self.indexes_from_sentence(sentence)
         indexes.append(EOS_token)
@@ -55,14 +56,12 @@ class Lang:
 
 
 class ScanDataset(Dataset):
-    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation = None):
-        
+    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation=None):
+
         self.input_lang = input_lang
         self.output_lang = output_lang
 
-
         self.X, self.y = self._get_data(split, split_variation, train)
-
 
     def __len__(self):
         return len(self.y)
@@ -70,27 +69,26 @@ class ScanDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-
     def convert_to_tensor(self, X, y):
         input_tensor = self.input_lang.tensor_from_sentence(X)
         target_tensor = self.output_lang.tensor_from_sentence(y)
         return (input_tensor, target_tensor)
 
-
     def convert_to_string(self, X, y):
         input_string = self.input_lang.sentence_from_indexes(X)
         target_string = self.output_lang.sentence_from_indexes(y)
         return (input_string, target_string)
-    
 
-    def _get_data(self, split: ScanSplit, split_variation = None, train: bool = True):
+    def _get_data(self, split: ScanSplit, split_variation=None, train: bool = True):
         """Retrieve the right data for the selected split"""
-        
+
         if split == ScanSplit.SIMPLE_SPLIT:
             valid_variations = ['p1', 'p2', 'p4', 'p8', 'p16', 'p32', 'p64']
             if split_variation and split_variation in valid_variations:
-                X_train, y_train = self._extract_data_from_file(f'size_variations/tasks_train_simple_{split_variation}.txt', split)
-                X_test, y_test = self._extract_data_from_file(f'size_variations/tasks_test_simple_{split_variation}.txt', split)
+                X_train, y_train = self._extract_data_from_file(
+                    f'size_variations/tasks_train_simple_{split_variation}.txt', split)
+                X_test, y_test = self._extract_data_from_file(
+                    f'size_variations/tasks_test_simple_{split_variation}.txt', split)
             elif split_variation:
                 raise Exception(f'Not a valid split variation. Valid variations are: {valid_variations}')
             else:
@@ -115,10 +113,11 @@ class ScanDataset(Dataset):
                 X_train, y_train = self._extract_data_from_file(f'tasks_train_addprim_{split_variation}.txt', split)
                 X_test, y_test = self._extract_data_from_file(f'tasks_test_addprim_{split_variation}.txt', split)
             else:
-                raise Exception(f'A valid split variation must be provided for this split. Valid variations are: {valid_variations}')
+                raise Exception(
+                    f'A valid split variation must be provided for this split. Valid variations are: {valid_variations}')
         else:
             raise Exception('Split not implemented')
-        
+
         if train:
             X = X_train
             y = y_train
@@ -133,8 +132,8 @@ class ScanDataset(Dataset):
             X = X_test
             y = y_test
 
-        return X,y
-        
+        return X, y
+
     def _extract_data_from_file(self, filepath: str, split: ScanSplit):
         """Get X and y from SCAN file"""
         with open(f'SCAN/{split.value}/{filepath}') as f:

@@ -8,11 +8,11 @@ import helper
 import scan_dataset
 import wandb
 
-
-
 teacher_forcing_ratio = .5
 
-def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device='cpu'):
+
+def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion,
+                    device='cpu'):
     """A single training iteration."""
     # Reset the gradients and loss
     encoder_optimizer.zero_grad()
@@ -34,7 +34,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     for di in range(target_length):
         # Decode next token
         decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_hidden_all)
-        
+
         loss += criterion(decoder_output, target_tensor[di])
 
         # If teacher forcing is used, the next input is the target
@@ -57,8 +57,8 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     return loss.item() / target_length
 
 
-
-def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2, verbose = False, plot=False, log_wandb=False):
+def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2,
+          verbose=False, plot=False, log_wandb=False):
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
@@ -71,7 +71,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
 
-        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
+        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer,
+                               decoder_optimizer, criterion, device=device)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -95,17 +96,14 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
     return encoder, decoder
 
 
-
-
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
-    
-    n_correct = [] # number of correct predictions
-    
+    n_correct = []  # number of correct predictions
+
     with torch.no_grad():
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
-            
+
             pred = []
 
             encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
@@ -116,8 +114,8 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             for di in range(max_length):
                 decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
-                    
+                    decoder_input, decoder_hidden, encoder_hidden_all)
+
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
@@ -128,12 +126,11 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             pred = np.array(pred)
             ground_truth = target_tensor.detach().cpu().numpy().squeeze()
-            
+
             if len(pred) == len(ground_truth):
                 n_correct.append(np.all(pred == ground_truth))
             else:
                 n_correct.append(0)
-    
 
     accuracy = np.mean(n_correct)
     if verbose:
