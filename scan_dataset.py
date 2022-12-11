@@ -146,7 +146,9 @@ class ScanDataset(Dataset):
         # Split at OUT and remove IN
         txt_data = [sen.strip(lead_token).split(split_token) for sen in txt_data]
 
-        in_txt = [sen[0] for sen in txt_data]
-        out_txt = [sen[1] for sen in txt_data]
+        # Added strip to remove extra whitespace at beginning and end of X, y
+        # probably doesn't affect anything, but why not
+        in_txt = [sen[0].strip() for sen in txt_data]
+        out_txt = [sen[1].strip() for sen in txt_data]
 
         return in_txt, out_txt

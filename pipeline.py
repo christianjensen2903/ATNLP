@@ -51,14 +51,20 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
 
     loss.backward()
 
+    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
+    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
+
     encoder_optimizer.step()
     decoder_optimizer.step()
 
     return loss.item() / target_length
 
 
-def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2,
+def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-3,
           verbose=False, plot=False, log_wandb=False):
+    encoder.train()
+    decoder.train()
+
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
@@ -97,13 +103,16 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
 
 
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
+    encoder.eval()
+    decoder.eval()
+
     n_correct = []  # number of correct predictions
 
     with torch.no_grad():
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
-            # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
 
+            target_length = target_tensor.size(0)
             pred = []
 
             encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
@@ -112,7 +121,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             decoder_hidden = encoder_hidden
 
-            for di in range(max_length):
+            for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(
                     decoder_input, decoder_hidden, encoder_hidden_all)
 
