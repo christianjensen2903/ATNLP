@@ -56,7 +56,7 @@ for _ in range(NUM_EXPERIMENTS):
         
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, config=overall_best_config).to(device)
 
-    pipeline.train(train_dataset, encoder, decoder, NUM_ITERATIONS, verbose=False, learning_rate=LEARNING_RATE, device=device)
+    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, NUM_ITERATIONS, verbose=False, learning_rate=LEARNING_RATE, device=device)
     eval_res = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device)
     print("Eval res", eval_res)
 
