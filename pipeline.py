@@ -101,6 +101,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
 
 
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
+    encoder.eval()
+    decoder.eval()
     
     n_correct = [] # number of correct predictions
     
@@ -141,5 +143,8 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
     accuracy = np.mean(n_correct)
     if verbose:
         print("Accuracy", accuracy)
+        
+    encoder.train()
+    decoder.train()
 
     return accuracy
