@@ -52,25 +52,11 @@ for _ in range(NUM_EXPERIMENTS):
     train_dataset, test_dataset = get_datasets(None)
     MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
     
-    encoder = models.EncoderRNN(
-            train_dataset.input_lang.n_words, 
-            overall_best_config['HIDDEN_SIZE'], 
-            device, 
-            overall_best_config['N_LAYERS'],
-            overall_best_config['RNN_TYPE'], 
-            overall_best_config['DROPOUT']
-        ).to(device)
+    encoder = models.EncoderRNN(train_dataset.input_lang.n_words, config=overall_best_config).to(device)
         
-    decoder = models.DecoderRNN(
-        train_dataset.output_lang.n_words, 
-        overall_best_config['HIDDEN_SIZE'], 
-        overall_best_config['N_LAYERS'], 
-        overall_best_config['RNN_TYPE'], 
-        overall_best_config['DROPOUT'],
-        overall_best_config['ATTENTION']
-    ).to(device)
+    decoder = models.DecoderRNN(train_dataset.output_lang.n_words, config=overall_best_config).to(device)
 
-    encoder, decoder = pipeline.train(train_dataset, encoder, decoder, NUM_ITERATIONS, verbose=False, learning_rate=LEARNING_RATE, device=device)
+    pipeline.train(train_dataset, encoder, decoder, NUM_ITERATIONS, verbose=False, learning_rate=LEARNING_RATE, device=device)
     eval_res = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device)
     print("Eval res", eval_res)
 

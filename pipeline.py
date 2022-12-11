@@ -14,6 +14,8 @@ teacher_forcing_ratio = .5
 
 def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device='cpu'):
     """A single training iteration."""
+    encoder_hidden = encoder.init_hidden(device=device)
+    
     # Reset the gradients and loss
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -21,7 +23,9 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     loss = 0
 
     # Encode the input
-    encoder_hidden, encoder_hidden_all = encoder(input_tensor)
+    input_length = input_tensor.size(0)
+    for ei in range(input_length):
+        _, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
 
     # Prepare the initial decoder input
     decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
@@ -33,7 +37,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     target_length = target_tensor.size(0)
     for di in range(target_length):
         # Decode next token
-        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_hidden_all)
+        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
         
         loss += criterion(decoder_output, target_tensor[di])
 
@@ -103,6 +107,7 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
 
 
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
+    encoder_hidden = encoder.init_hidden(device=device)
     encoder.eval()
     decoder.eval()
     
@@ -115,15 +120,17 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
             
             pred = []
 
-            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+            # Encode the input
+            input_length = input_tensor.size(0)
+            for ei in range(input_length):
+                _, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
 
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
             decoder_hidden = encoder_hidden
 
             for di in range(max_length):
-                decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
+                decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
                     
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
