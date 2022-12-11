@@ -43,7 +43,7 @@ SPLIT_VARIATIONS = ['p1', 'p2', 'p4', 'p8', 'p16', 'p32', 'p64']
 NUM_EXPERIMENTS = 5
 
 LEARNING_RATE = 1e-3
-NUM_ITERATIONS = 10**5
+NUM_ITERATIONS = 10**4
 NUM_EXPERIMENTS = 5
 
 # ============== Train the overall best five times and average the results ==============
@@ -57,8 +57,10 @@ for _ in range(NUM_EXPERIMENTS):
     decoder = models.DecoderRNN(train_dataset.output_lang.n_words, config=overall_best_config).to(device)
 
     encoder, decoder = pipeline.train(train_dataset, encoder, decoder, NUM_ITERATIONS, verbose=False, learning_rate=LEARNING_RATE, device=device)
+    train_res = pipeline.evaluate(train_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device)
     eval_res = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device)
-    print("Eval res", eval_res)
+    print("Testing res", eval_res)
+    print("Training res", train_res)
 
     results.append(eval_res)
     

@@ -8,8 +8,6 @@ import helper
 import scan_dataset
 #import wandb
 
-
-
 teacher_forcing_ratio = .5
 
 def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device='cpu'):
@@ -19,11 +17,13 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     # Reset the gradients and loss
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
+    
+    input_length = input_tensor.size(0)
+    target_length = target_tensor.size(0)
 
     loss = 0
 
     # Encode the input
-    input_length = input_tensor.size(0)
     for ei in range(input_length):
         _, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
 
@@ -34,7 +34,6 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
-    target_length = target_tensor.size(0)
     for di in range(target_length):
         # Decode next token
         decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
@@ -49,9 +48,9 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
             topv, topi = decoder_output.topk(1)
             decoder_input = topi.squeeze().detach()  # detach from history as input
 
-        # If the decoder input is the EOS token, stop decoding
-        if decoder_input.item() == scan_dataset.EOS_token:
-            break
+            # If the decoder input is the EOS token, stop decoding
+            if decoder_input.item() == scan_dataset.EOS_token:
+                break
 
     loss.backward()
     
@@ -64,49 +63,21 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     return loss.item() / target_length
 
 
-
-def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2, verbose = False, plot=False, log_wandb=False):
-    plot_losses = []
-    print_loss_total = 0  # Reset every print_every
-    plot_loss_total = 0  # Reset every plot_every
-
+def train(dataset, encoder, decoder, n_iters, device='cpu', learning_rate=1e-2):
     encoder_optimizer = optim.Adam(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate)
     criterion = nn.NLLLoss()
 
-    for iteration in tqdm(range(1, n_iters + 1), total=n_iters, leave=False, desc="Training"):
+    for _ in tqdm(range(1, n_iters + 1), total=n_iters, leave=False, desc="Training"):
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
         input_tensor = input_tensor.reshape(-1)
 
-        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
-        print_loss_total += loss
-        plot_loss_total += loss
-
-        if iteration % print_every == 0 and verbose:
-            print_loss_avg = print_loss_total / print_every
-            print_loss_total = 0
-            print('%d (%d%%): %.4f' % (iteration, iteration / n_iters * 100, print_loss_avg))
-
-        if iteration % plot_every == 0:
-
-            plot_loss_avg = plot_loss_total / plot_every
-            plot_losses.append(plot_loss_avg)
-
-            #if log_wandb:
-                #wandb.log({"avg_loss": plot_loss_avg})
-            plot_loss_total = 0
-
-    if plot:
-        helper.show_plot(plot_losses)
-
+        train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
+        
     return encoder, decoder
 
-
-
-
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
-    encoder_hidden = encoder.init_hidden(device=device)
     encoder.eval()
     decoder.eval()
     
@@ -116,13 +87,16 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
-            input_tensor = input_tensor.reshape(-1)
             input_tensor, target_tensor = input_tensor.to(device), target_tensor.to(device)
             
             pred = []
+            
+            encoder_hidden = encoder.init_hidden()
+            
+            input_length = input_tensor.size(0)
+            target_length = target_tensor.size(0)
 
             # Encode the input
-            input_length = input_tensor.size(0)
             for ei in range(input_length):
                 _, encoder_hidden = encoder(input_tensor[ei], encoder_hidden)
 
@@ -130,7 +104,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             decoder_hidden = encoder_hidden
 
-            for di in range(max_length):
+            for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden)
                     
                 topv, topi = decoder_output.topk(1)
