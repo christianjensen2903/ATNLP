@@ -136,7 +136,8 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
     plt.bar(splits, list(mean_results.values()), align='center', yerr=list(std_results.values()),
             capsize=5)
     plt.xlabel(x_label)
-    plt.xticks()
+    # TODO: figure out how to set x axis labels to exactly 'splits'
+    # plt.xticks()
     plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
