@@ -26,7 +26,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     # Prepare the initial decoder input
     decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
-    decoder_hidden = encoder_hidden
+    decoder_hidden = encoder_hidden[0]
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
