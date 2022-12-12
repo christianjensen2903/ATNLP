@@ -50,6 +50,9 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
             break
 
     loss.backward()
+    
+    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
+    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
 
     encoder_optimizer.step()
     decoder_optimizer.step()
@@ -98,6 +101,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
 
 
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
+    encoder.eval()
+    decoder.eval()
     
     n_correct = [] # number of correct predictions
     
@@ -113,8 +118,10 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
             decoder_hidden = encoder_hidden
+            
+            target_length = target_tensor.size(0)
 
-            for di in range(max_length):
+            for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(
                         decoder_input, decoder_hidden, encoder_hidden_all)
                     
@@ -138,5 +145,8 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
     accuracy = np.mean(n_correct)
     if verbose:
         print("Accuracy", accuracy)
+        
+    encoder.train()
+    decoder.train()
 
     return accuracy
