@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pickle
 
-wandb_log = True
+log_wandb = True
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -74,7 +74,7 @@ def run_overall_best():
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))
-    if wandb_log:
+    if log_wandb:
         wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
@@ -91,12 +91,12 @@ def run_experiment_best():
                                     experiment_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device)
+                                          device=device, log_wandb=log_wandb)
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-    if wandb_log:
+    if log_wandb:
         wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
@@ -125,7 +125,7 @@ def test_sequence_length():
                                     overall_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device)
+                                          device=device, log_wandb=log_wandb)
 
         # Evaluate on various lengths
         for split in splits:
@@ -157,7 +157,7 @@ def test_sequence_length():
     plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
-    if wandb_log:
+    if log_wandb:
         wandb.log({"Sequence length": plt})
 
     plt.show()
@@ -222,7 +222,7 @@ def test_command_length():
     plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
-    if wandb_log:
+    if log_wandb:
         wandb.log({"Command length": plt})
     plt.show()
 
@@ -233,7 +233,7 @@ def test_command_length():
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
-    if wandb_log:
+    if log_wandb:
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
