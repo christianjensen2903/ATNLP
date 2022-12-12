@@ -25,7 +25,7 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 10**4
+n_iter = 10**5
 
 
 overall_best = {
