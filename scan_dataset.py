@@ -14,7 +14,7 @@ class ScanSplit(Enum):
 
 class Lang:
     def __init__(self):
-        self.word2index = {"SOS": SOS_token, "EOS": EOS_token, "OOV": OOV_token}
+        self.word2index = {}
         self.word2count = {}
         self.index2word = {SOS_token: "SOS", EOS_token: "EOS", OOV_token: 'OOV'}
         self.n_words = len(self.index2word)  # Count tokens
@@ -39,8 +39,9 @@ class Lang:
 
     def indexes_from_sentence(self, sentence: str):
         """Get word ids from sentence"""
-        indexes = [self.word2index.get(word, OOV_token) for word in sentence.split()]
+        indexes = [self.word2index.get(word,OOV_token) for word in sentence.split()]
         return indexes
+
 
     def sentence_from_indexes(self, indexes: list):
         """Get sentence from word ids"""
