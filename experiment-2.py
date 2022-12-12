@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from torch.utils.data import DataLoader
 import scan_dataset
 import models
@@ -7,8 +9,9 @@ import wandb
 import os
 from matplotlib import pyplot as plt
 import numpy as np
+import pickle
 
-wandb_log = False
+wandb_log = True
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -29,8 +32,8 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 10000
-n_runs = 1
+n_iter = 100000
+n_runs = 5
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -65,6 +68,8 @@ def run_overall_best():
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device)
+        pickle.dump(encoder, open('overall_best_encoder_exp_2.sav', 'wb'))
+        pickle.dump(decoder, open('overall_best_decoder_exp_2.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
@@ -97,16 +102,16 @@ def run_experiment_best():
 
 def test_sequence_length():
     # Test how generalization works for different lengths
-    splits = [24, 25, 26, 27, 28, 29, 30, 32, 33, 36, 40, 48]
+    splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
 
-    results = {}
+    results = defaultdict(list)
 
     for _ in range(n_runs):
         input_lang = scan_dataset.Lang()
         output_lang = scan_dataset.Lang()
 
         train_dataset = scan_dataset.ScanDataset(
-            split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+            split=scan_dataset.ScanSplit.LENGTH_SPLIT,
             input_lang=input_lang,
             output_lang=output_lang,
             train=True
@@ -124,10 +129,8 @@ def test_sequence_length():
 
         # Evaluate on various lengths
         for split in splits:
-            results[split] = []
-
             test_dataset = scan_dataset.ScanDataset(
-                split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+                split=scan_dataset.ScanSplit.LENGTH_SPLIT,
                 split_variation=split,
                 input_lang=input_lang,
                 output_lang=output_lang,
@@ -152,6 +155,7 @@ def test_sequence_length():
             capsize=5)
     plt.xlabel('Ground-truth action sequence length')
     plt.ylabel('Accuracy on new commands (%)')
+    plt.ylim((0., 1.))
 
     if wandb_log:
         wandb.log({"Sequence length": plt})
@@ -167,14 +171,14 @@ def test_command_length():
     # Test how generalization works for different command lengths
     splits = [4, 6, 7, 8, 9]
 
-    results = {}
+    results = defaultdict(list)
 
     for _ in range(n_runs):
         input_lang = scan_dataset.Lang()
         output_lang = scan_dataset.Lang()
 
         train_dataset = scan_dataset.ScanDataset(
-            split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+            split=scan_dataset.ScanSplit.LENGTH_SPLIT,
             input_lang=input_lang,
             output_lang=output_lang,
             train=True
@@ -191,31 +195,15 @@ def test_command_length():
 
         # Evaluate on various lengths
         for split in splits:
-
             test_dataset = scan_dataset.ScanDataset(
-                split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+                split=scan_dataset.ScanSplit.LENGTH_SPLIT,
                 input_lang=input_lang,
                 output_lang=output_lang,
                 train=False
             )
 
-            # Filter out sequences with different command lengths
-            new_X, new_y = [], []
-            for i in range(len(test_dataset)):
-                X, y = test_dataset[i]
-                X, y = test_dataset.convert_to_tensor(X, y)
-                if len((X)) == split:
-                    new_X.append(test_dataset[i][0])
-                    new_y.append(test_dataset[i][1])
-
-            test_dataset.X = new_X
-            test_dataset.y = new_y
-
-            accuracy = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
-
-            if split not in results:
-                results[split] = []
-            results[split].append(accuracy)
+            results[split].append(
+                pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     # Average results
     mean_results = {}
@@ -232,6 +220,7 @@ def test_command_length():
             capsize=5)
     plt.xlabel('Command length')
     plt.ylabel('Accuracy on new commands (%)')
+    plt.ylim((0., 1.))
 
     if wandb_log:
         wandb.log({"Command length": plt})
@@ -248,9 +237,9 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
-    # run_overall_best()
-    # run_experiment_best()
-    test_sequence_length()
+    run_overall_best()
+    run_experiment_best()
+    # test_sequence_length()
     # test_command_length()
 
 

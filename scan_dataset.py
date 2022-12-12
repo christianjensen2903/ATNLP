@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from enum import Enum
@@ -98,11 +99,18 @@ class ScanDataset(Dataset):
 
             X_train, y_train = self._extract_data_from_file('tasks_train_length.txt', split)
             X_test, y_test = self._extract_data_from_file('tasks_test_length.txt', split)
+            valid_action_seq_len = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
+            valid_command_len = [4, 6, 7, 8, 9]
 
-            if split_variation and isinstance(split_variation, int):
-                # filter test data based on length
-                X_test = [x for x in X_test if len(x.split()) == split_variation]
-                y_test = [y for y in y_test if len(y.split()) == split_variation]
+            if split_variation in valid_action_seq_len:
+                filter_idxs = [i for i, y in enumerate(y_test) if len(y.split()) == split_variation]
+                X_test = [X_test[i] for i in filter_idxs]
+                y_test = [y_test[i] for i in filter_idxs]
+
+            elif split_variation in valid_command_len:
+                filter_idxs = [i for i, x in enumerate(X_test) if len(x.split()) == split_variation]
+                X_test = [X_test[i] for i in filter_idxs]
+                y_test = [y_test[i] for i in filter_idxs]
 
             elif split_variation:
                 raise Exception('Split variation must be an integer')
@@ -146,8 +154,6 @@ class ScanDataset(Dataset):
         # Split at OUT and remove IN
         txt_data = [sen.strip(lead_token).split(split_token) for sen in txt_data]
 
-        # Added strip to remove extra whitespace at beginning and end of X, y
-        # probably doesn't affect anything, but why not
         in_txt = [sen[0].strip() for sen in txt_data]
         out_txt = [sen[1].strip() for sen in txt_data]
 
