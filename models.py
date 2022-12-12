@@ -57,7 +57,7 @@ class EncoderRNN(nn.Module):
             if self.encoder_cell.RNN_type == 'LSTM':
                 encoder_hidden_all[ei] = encoder_hidden[0][-1, 0]
             else:
-                encoder_hidden_all[ei] = encoder_hidden[0, 0]
+                encoder_hidden_all[ei] = encoder_hidden[-1, 0]
 
         return encoder_hidden, encoder_hidden_all
 
