@@ -125,7 +125,6 @@ class AttnDecoderCell(nn.Module):
 
     def alpha(self, encoder_hiddens, input_hidden, t):
         """Computes the attention weight for a given encoder hidden state"""
-        # alpha_it = exp(e(g_(i-1), h_t)) / sum(exp(e(g_(i-1), h_j)))
         T = len(encoder_hiddens)
         numerator = torch.exp(self.e(input_hidden, encoder_hiddens[t]))
 

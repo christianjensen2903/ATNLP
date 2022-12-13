@@ -26,6 +26,7 @@ class Lang:
 
     def add_sentence(self, sentence):
         """Add sentence to vocab"""
+        self.max_length = max(len(sentence.split(' ')), self.max_length)
         for word in sentence.split(' '):
             self._add_word(word)
 
@@ -36,7 +37,7 @@ class Lang:
             self.word2count[word] = 1
             self.index2word[self.n_words] = word
             self.n_words += 1
-            self.max_length = max(len(word), self.max_length)
+            # self.max_length = max(len(word), self.max_length)
         else:
             self.word2count[word] += 1
 

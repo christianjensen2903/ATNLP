@@ -167,19 +167,17 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
 
             decoder_hidden = encoder_hidden
 
-            for di in range(target_length-1):
+            for di in range(target_length - 1):
                 decoder_output, decoder_hidden = decoder(
                     decoder_input, decoder_hidden, encoder_hidden_all)
 
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
-                
-
                 if decoder_input.item() == scan_dataset.EOS_token:
                     topv, topi = decoder_output.topk(2)
                     decoder_input = topi.squeeze()[1].detach()  # detach from history as input
-                    
+
                 pred.append(decoder_input.item())
 
             pred = np.array(pred)
@@ -190,8 +188,13 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
             else:
                 n_correct.append(0)
 
+            if len(ground_truth) == 48 and not np.all(pred == ground_truth):
+                print(f'Ground: {np.array(dataset.output_lang.sentence_from_indexes(ground_truth).split())[np.argwhere(pred != ground_truth).T]}')
+                print(f'Pred  : {np.array(dataset.output_lang.sentence_from_indexes(pred).split())[np.argwhere(pred != ground_truth).T]}')
+                print(f'Index : {np.argwhere(pred != ground_truth).T}')
+
     accuracy = np.mean(n_correct)
     if verbose:
         print("Accuracy", accuracy)
-    
+
     return accuracy

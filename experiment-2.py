@@ -34,7 +34,7 @@ test_dataset = scan_dataset.ScanDataset(
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
 n_iter = 100000
-n_runs = 5
+n_runs = 1
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -56,7 +56,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
-def run_overall_best():
+def run_overall_best(dump=False):
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
@@ -69,20 +69,22 @@ def run_overall_best():
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
+        if dump:
+            pickle.dump(encoder, open(f'overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
+            pickle.dump(decoder, open(f'overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))
+
     if log_wandb:
         wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
-def run_experiment_best():
+def run_experiment_best(dump=False):
     results = []
     # Train 5 times and average the results
-    for _ in range(n_runs):
+    for run in range(n_runs):
         encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device,
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT']).to(device)
@@ -92,9 +94,10 @@ def run_experiment_best():
                                     experiment_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=True)
-        pickle.dump(encoder, open('experiment_best_encoder_exp_2.sav', 'wb'))
-        pickle.dump(decoder, open('experiment_best_decoder_exp_2.sav', 'wb'))
+                                          device=device, log_wandb=log_wandb)
+        if dump:
+            pickle.dump(encoder, open(f'experiment_best_encoder_exp_2_run_{run}.sav', 'wb'))
+            pickle.dump(decoder, open(f'experiment_best_decoder_exp_2_run_{run}.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
@@ -103,12 +106,13 @@ def run_experiment_best():
         wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
-def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False):
+def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length',
+                          oracle=False):
     results = defaultdict(list)
 
-    for i in range(n_runs):
-        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
-        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
+    for run in range(n_runs):
+        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'rb'))
 
         # Evaluate on various lengths
         for split in splits:
@@ -120,11 +124,12 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
                 train=False
             )
             if oracle:
-                results[split].append(pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device))
+                results[split].append(pipeline.oracle_eval(test_dataset, encoder, decoder,
+                                                           verbose=False, device=device))
             else:
-                results[split].append(
-                    pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
-    
+                results[split].append(pipeline.evaluate(test_dataset, encoder, decoder,
+                                                        max_length=MAX_LENGTH, verbose=False, device=device))
+
     print(f'{plot_title}: {results}')
 
     # Average results
@@ -142,14 +147,14 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
             capsize=5)
     plt.xlabel(x_label)
     # TODO: figure out how to set x axis labels to exactly 'splits'
-    # plt.xticks()
+    # plt.xticks(splits, splits)
     plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
     if log_wandb:
         wandb.log({plot_title: plt})
 
-    # plt.show()
+    plt.show()
 
     # Print results
     for split, result in results.items():
@@ -158,7 +163,8 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
 
 def test_sequence_length(oracle=False):
     # Test how generalization works for different lengths
-    splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
+    # splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
+    splits = [48]
     length_generalization(splits, oracle=oracle)
 
 
@@ -171,10 +177,9 @@ def test_command_length():
 def inspect_greedy_search():
     results = []
 
-    for i in range(5): # n_runs
+    for i in range(5):  # n_runs
         encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
         decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
-
 
         test_dataset = scan_dataset.ScanDataset(
             split=scan_dataset.ScanSplit.LENGTH_SPLIT,
@@ -189,7 +194,8 @@ def inspect_greedy_search():
         results.append([])
 
         with torch.no_grad():
-            for input_tensor, target_tensor in tqdm(test_dataset, total=len(test_dataset), leave=False, desc="Inspecting"):
+            for input_tensor, target_tensor in tqdm(test_dataset, total=len(test_dataset), leave=False,
+                                                    desc="Inspecting"):
                 input_tensor, target_tensor = test_dataset.convert_to_tensor(input_tensor, target_tensor)
 
                 target_length = target_tensor.size(0)
@@ -216,7 +222,6 @@ def inspect_greedy_search():
                     if decoder_input.item() == scan_dataset.EOS_token:
                         break
 
-
                 truth_prob = 1.0
                 for di in range(target_length):
                     decoder_output, decoder_hidden = decoder(
@@ -227,7 +232,6 @@ def inspect_greedy_search():
                     truth_prob *= prob
 
                     decoder_input = target_tensor[di]
-
 
                 greedy_greatest = greedy_prob > truth_prob
 
@@ -240,13 +244,11 @@ def inspect_greedy_search():
 
 
 def oracle_test():
-
     results = []
 
-    for i in range(5): # n_runs
+    for i in range(5):  # n_runs
         encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
         decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
-
 
         test_dataset = scan_dataset.ScanDataset(
             split=scan_dataset.ScanSplit.LENGTH_SPLIT,
@@ -259,9 +261,8 @@ def oracle_test():
 
         results.append(accuracy)
 
-        
-
     print('Oracle Accuracy: {}'.format(np.mean(results)))
+
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
@@ -270,8 +271,8 @@ def main():
         wandb.init(project="experiment-2", entity="atnlp")
 
     # run_overall_best()
-    # run_experiment_best()
-    # test_sequence_length()
+    # run_experiment_best(True)
+    test_sequence_length(oracle=True)
     # test_command_length()
 
     # inspect_greedy_search()
