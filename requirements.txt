@@ -1,2 +1,4 @@
 wandb==0.13.5
 tqdm
+torch
+matplotlib
