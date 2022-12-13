@@ -152,8 +152,8 @@ def main():
         wandb.init(project="experiment-3e", entity="atnlp")
 
     # run_overall_best()
-    # run_experiment_best()
-    run_experiment_best_d2i() # not yet working!
+    run_experiment_best()
+    # run_experiment_best_d2i() # not yet working!
     # test_sequence_length()
     # test_command_length()
 

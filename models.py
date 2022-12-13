@@ -121,7 +121,8 @@ class AttnDecoderCell(nn.Module):
     def e(self, g, h):
         """Computes the similarity between the previous decoder hidden state g and an encoder hidden state h"""
         # vT tanh(W g_(i-1) + U h_t)
-        return self.v.T @ torch.tanh(self.W * g + self.U * h)
+        # return self.v.T @ torch.tanh(self.W * g + self.U * h)
+        return self.v.dot( torch.tanh(self.W * g + self.U * h))
 
     def alpha(self, encoder_hiddens, input_hidden, t):
         """Computes the attention weight for a given encoder hidden state"""
