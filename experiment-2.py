@@ -103,7 +103,7 @@ def run_experiment_best():
         wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
-def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length'):
+def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False):
     results = defaultdict(list)
 
     for i in range(n_runs):
@@ -119,9 +119,11 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
                 output_lang=output_lang,
                 train=False
             )
-
-            results[split].append(
-                pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+            if oracle:
+                results[split].append(pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device))
+            else:
+                results[split].append(
+                    pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
     
     print(f'{plot_title}: {results}')
 
@@ -154,10 +156,10 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
         print('Split: {}, Accuracy: {}'.format(split, sum(result) / len(result)))
 
 
-def test_sequence_length():
+def test_sequence_length(oracle=False):
     # Test how generalization works for different lengths
     splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
-    length_generalization(splits)
+    length_generalization(splits, oracle=oracle)
 
 
 def test_command_length():
@@ -253,49 +255,11 @@ def oracle_test():
             train=False
         )
 
-        encoder.eval()
-        decoder.eval()
+        accuracy = pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device)
 
-        n_correct = []  # number of correct predictions
-
-        with torch.no_grad():
-            for input_tensor, target_tensor in tqdm(test_dataset, total=len(test_dataset), leave=False, desc="Evaluating"):
-                input_tensor, target_tensor = test_dataset.convert_to_tensor(input_tensor, target_tensor)
-
-                target_length = target_tensor.size(0)
-                pred = []
-
-                encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
-
-                decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
-
-                decoder_hidden = encoder_hidden
-
-                for di in range(target_length-1):
-                    decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
-
-                    topv, topi = decoder_output.topk(1)
-                    decoder_input = topi.squeeze().detach()  # detach from history as input
-
-                    
-
-                    if decoder_input.item() == scan_dataset.EOS_token:
-                        topv, topi = decoder_output.topk(2)
-                        decoder_input = topi.squeeze()[1].detach()  # detach from history as input
-                        
-                    pred.append(decoder_input.item())
-
-                pred = np.array(pred)
-                ground_truth = target_tensor.detach().cpu().numpy().squeeze()[:-1]
-
-                if len(pred) == len(ground_truth):
-                    n_correct.append(np.all(pred == ground_truth))
-                else:
-                    n_correct.append(0)
-
-        accuracy = np.mean(n_correct)
         results.append(accuracy)
+
+        
 
     print('Oracle Accuracy: {}'.format(np.mean(results)))
 
@@ -311,7 +275,8 @@ def main():
     # test_command_length()
 
     # inspect_greedy_search()
-    oracle_test()
+    # oracle_test()
+    # test_sequence_length(oracle=True)
 
 
 if __name__ == '__main__':

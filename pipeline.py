@@ -146,3 +146,52 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
         print("Accuracy", accuracy)
 
     return accuracy
+
+
+def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
+    encoder.eval()
+    decoder.eval()
+
+    n_correct = []  # number of correct predictions
+
+    with torch.no_grad():
+        for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
+            input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
+
+            target_length = target_tensor.size(0)
+            pred = []
+
+            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+
+            decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
+
+            decoder_hidden = encoder_hidden
+
+            for di in range(target_length-1):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden, encoder_hidden_all)
+
+                topv, topi = decoder_output.topk(1)
+                decoder_input = topi.squeeze().detach()  # detach from history as input
+
+                
+
+                if decoder_input.item() == scan_dataset.EOS_token:
+                    topv, topi = decoder_output.topk(2)
+                    decoder_input = topi.squeeze()[1].detach()  # detach from history as input
+                    
+                pred.append(decoder_input.item())
+
+            pred = np.array(pred)
+            ground_truth = target_tensor.detach().cpu().numpy().squeeze()[:-1]
+
+            if len(pred) == len(ground_truth):
+                n_correct.append(np.all(pred == ground_truth))
+            else:
+                n_correct.append(0)
+
+    accuracy = np.mean(n_correct)
+    if verbose:
+        print("Accuracy", accuracy)
+    
+    return accuracy
