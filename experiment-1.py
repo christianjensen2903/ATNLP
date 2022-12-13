@@ -3,7 +3,7 @@ import models
 import pipeline
 import torch
 from matplotlib import pyplot as plt
-import wandb
+#import wandb
 import numpy as np
 
 
@@ -26,7 +26,7 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 100
+n_iter = 10**5
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -47,9 +47,9 @@ experiment_best = {
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
-wandb.login()
+#wandb.login()
 
-wandb.init(project="experiment-1", entity="atnlp")
+#wandb.init(project="experiment-1", entity="atnlp")
 
 results = []
 # Train 5 times and average the results
@@ -67,7 +67,7 @@ for _ in range(5):
 
 avg_accuracy = sum(results) / len(results)
 print('Average accuracy for overall best: {}'.format(avg_accuracy))
-wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
+#wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 results = []
 # Train 5 times and average the results
@@ -85,7 +85,7 @@ for _ in range(5):
 
 avg_accuracy = sum(results) / len(results)
 print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
+#wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 splits = ['p1', 'p2', 'p4', 'p8', 'p16', 'p32', 'p64']
 
@@ -139,7 +139,7 @@ plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=
 plt.xlabel('Percent of commands used for training')
 plt.ylabel('Accuracy on new commands (%)')
 
-wandb.log({"Percent commands": plt})
+#wandb.log({"Percent commands": plt})
 plt.show()
 
 # Print results

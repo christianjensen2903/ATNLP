@@ -6,7 +6,7 @@ import random
 from tqdm import tqdm
 import helper
 import scan_dataset
-import wandb
+#import wandb
 
 teacher_forcing_ratio = .5
 
@@ -55,9 +55,6 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
     nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
 
-    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
-    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
-
     encoder_optimizer.step()
     decoder_optimizer.step()
 
@@ -96,9 +93,9 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
 
-            if log_wandb:
-                wandb.log({"avg_loss": plot_loss_avg})
-            plot_loss_total = 0
+            #if log_wandb:
+            #    wandb.log({"avg_loss": plot_loss_avg})
+            #plot_loss_total = 0
 
     if plot:
         helper.show_plot(plot_losses)
@@ -202,5 +199,8 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
     accuracy = np.mean(n_correct)
     if verbose:
         print("Accuracy", accuracy)
+    
+    encoder.train()
+    decoder.train()
     
     return accuracy
