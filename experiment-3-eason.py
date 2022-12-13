@@ -5,7 +5,7 @@ import scan_dataset
 import models
 import pipeline
 import torch
-import wandb
+#import wandb
 import os
 from matplotlib import pyplot as plt
 import numpy as np
@@ -77,8 +77,8 @@ def run_overall_best():
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))
-    if log_wandb:
-        wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
+    #if log_wandb:
+    #    wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
 
 
 def run_experiment_best():
@@ -101,8 +101,8 @@ def run_experiment_best():
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-    if log_wandb:
-        wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
+    #if log_wandb:
+    #    wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
 def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False):
@@ -148,8 +148,8 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
     plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
-    if log_wandb:
-        wandb.log({plot_title: plt})
+    #if log_wandb:
+    #    wandb.log({plot_title: plt})
 
     # plt.show()
 
@@ -267,9 +267,9 @@ def oracle_test():
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
-    if log_wandb:
-        wandb.login()
-        wandb.init(project="experiment-3e", entity="atnlp")
+    #if log_wandb:
+    #    wandb.login()
+    #    wandb.init(project="experiment-3e", entity="atnlp")
 
     # run_overall_best()
     run_experiment_best()
