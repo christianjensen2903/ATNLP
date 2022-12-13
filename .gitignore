@@ -1,3 +1,7 @@
 Scan
 wandb
 .env
+
+.idea
+SCAN/
+__pycache__/
