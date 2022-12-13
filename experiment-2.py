@@ -33,8 +33,8 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 100000
-n_runs = 5
+n_iter = 10000
+n_runs = 1
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -92,7 +92,7 @@ def run_experiment_best():
                                     experiment_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=True)
+                                          device=device, log_wandb=log_wandb)
         pickle.dump(encoder, open('experiment_best_encoder_exp_2.sav', 'wb'))
         pickle.dump(decoder, open('experiment_best_decoder_exp_2.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
@@ -270,7 +270,7 @@ def main():
         wandb.init(project="experiment-2", entity="atnlp")
 
     # run_overall_best()
-    # run_experiment_best()
+    run_experiment_best()
     # test_sequence_length()
     # test_command_length()
 

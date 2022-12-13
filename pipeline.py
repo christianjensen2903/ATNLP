@@ -21,11 +21,10 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     loss = 0
 
     # Encode the input
-    encoder_hidden, encoder_hidden_all = encoder(input_tensor)
+    encoder_outputs, encoder_hidden = encoder(input_tensor)
 
     # Prepare the initial decoder input
     decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
-
 
     decoder_hidden = encoder_hidden
 
@@ -34,17 +33,17 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     target_length = target_tensor.size(0)
     for di in range(target_length):
         # Decode next token
-        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_hidden_all)
+        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_outputs)
 
         loss += criterion(decoder_output, target_tensor[di])
 
         # If teacher forcing is used, the next input is the target
         # Otherwise, the next input is the output with the highest probability
         if use_teacher_forcing:
-            decoder_input = target_tensor[di]
+            decoder_input = target_tensor[di].unsqueeze(0)
         else:
             topv, topi = decoder_output.topk(1)
-            decoder_input = topi.squeeze().detach()  # detach from history as input
+            decoder_input = topi.detach()  # detach from history as input
 
         # If the decoder input is the EOS token, stop decoding
         if decoder_input.item() == scan_dataset.EOS_token:
@@ -52,9 +51,6 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
 
     loss.backward()
     
-    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
-    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
-
     nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
     nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
 
@@ -132,7 +128,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
                     decoder_input, decoder_hidden, encoder_hidden_all)
 
                 topv, topi = decoder_output.topk(1)
-                decoder_input = topi.squeeze().detach()  # detach from history as input
+                decoder_input = topi.detach()  # detach from history as input
 
                 pred.append(decoder_input.item())
 
