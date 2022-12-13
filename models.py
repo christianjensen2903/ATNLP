@@ -137,6 +137,11 @@ class AttnDecoderCell(nn.Module):
 
         return numerator / denominator
 
+    def alpha_softmax(self, encoder_hiddens, input_hiddens, t):
+        es = torch.stack([self.e(input_hiddens, encoder_hiddens[j]) for j in range(len(encoder_hiddens))])
+        es = F.softmax(es, dim=0)
+        return es[t]
+
     def forward(self, input, input_hidden, encoder_hiddens):
 
         embedded = self.embedding(input).view(1, 1, -1)
@@ -146,7 +151,7 @@ class AttnDecoderCell(nn.Module):
         c_i = 0
 
         for t in range(len(encoder_hiddens)):
-            alpha_it = self.alpha(encoder_hiddens, input_hidden, t)
+            alpha_it = self.alpha_softmax(encoder_hiddens, input_hidden, t)
             h_t = encoder_hiddens[t]
             c_i += alpha_it * h_t
 
