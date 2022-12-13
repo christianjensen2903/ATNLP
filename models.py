@@ -161,7 +161,7 @@ class DecoderCell(nn.Module):
 class AdditiveAttention(nn.Module):
     """Additive attention."""
 
-    def __init__(self, key_size, query_size, num_hiddens, dropout, **kwargs):
+    def __init__(self, key_size, query_size, num_hiddens, **kwargs):
         super(AdditiveAttention, self).__init__(**kwargs)
         self.W_k = nn.Linear(key_size, num_hiddens, bias=False)
         self.W_q = nn.Linear(query_size, num_hiddens, bias=False)
@@ -177,18 +177,20 @@ class AdditiveAttention(nn.Module):
 
 class AttnDecoderCell(d2l.Decoder):
     def __init__(self, ouput_size, hidden_size, num_layers, rnn_type,
-                 dropout=0, device='cpu'):
+                 dropout_p=0, device='cpu'):
         super().__init__()
-        self.attention = AdditiveAttention(num_hiddens=hidden_size, dropout=dropout, key_size=hidden_size, query_size=hidden_size)
+        self.attention = AdditiveAttention(num_hiddens=hidden_size, key_size=hidden_size, query_size=hidden_size)
         self.embedding = nn.Embedding(ouput_size, hidden_size)
         self.rnn = nn.GRU(
             hidden_size*2, hidden_size, num_layers,
-            dropout=dropout)
+            dropout=dropout_p)
         self.dense = nn.Linear(hidden_size, ouput_size)
+        self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, input, hidden_state, enc_outputs):
 
         embedded = self.embedding(input)
+        embedded = self.dropout(embedded)
 
         query = torch.unsqueeze(hidden_state[-1], dim=1)
         context = self.attention(
