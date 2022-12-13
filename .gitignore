@@ -5,3 +5,4 @@ wandb
 .idea
 SCAN/
 __pycache__/
+.sav
