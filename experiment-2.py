@@ -200,7 +200,7 @@ def inspect_greedy_search():
 
                 greedy_prob = 1.0
 
-                MAX_LENGTH = 100
+                MAX_LENGTH = 500
                 for di in range(MAX_LENGTH):
                     decoder_output, decoder_hidden = decoder(
                         decoder_input, decoder_hidden, encoder_hidden_all)
@@ -225,7 +225,7 @@ def inspect_greedy_search():
                     truth_prob *= prob
 
                     decoder_input = target_tensor[di]
-                    
+
 
                 greedy_greatest = greedy_prob > truth_prob
 
@@ -236,6 +236,68 @@ def inspect_greedy_search():
     avg_greedy_greatest = sum(pct_greedy_greatest) / len(pct_greedy_greatest)
     print('Average amount of greedy search being greater than truth: {}'.format(avg_greedy_greatest))
 
+
+def oracle_test():
+
+    results = []
+
+    for i in range(5): # n_runs
+        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
+
+
+        test_dataset = scan_dataset.ScanDataset(
+            split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+            input_lang=input_lang,
+            output_lang=output_lang,
+            train=False
+        )
+
+        encoder.eval()
+        decoder.eval()
+
+        n_correct = []  # number of correct predictions
+
+        with torch.no_grad():
+            for input_tensor, target_tensor in tqdm(test_dataset, total=len(test_dataset), leave=False, desc="Evaluating"):
+                input_tensor, target_tensor = test_dataset.convert_to_tensor(input_tensor, target_tensor)
+
+                target_length = target_tensor.size(0)
+                pred = []
+
+                encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+
+                decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
+
+                decoder_hidden = encoder_hidden
+
+                for di in range(target_length-1):
+                    decoder_output, decoder_hidden = decoder(
+                        decoder_input, decoder_hidden, encoder_hidden_all)
+
+                    topv, topi = decoder_output.topk(1)
+                    decoder_input = topi.squeeze().detach()  # detach from history as input
+
+                    
+
+                    if decoder_input.item() == scan_dataset.EOS_token:
+                        topv, topi = decoder_output.topk(2)
+                        decoder_input = topi.squeeze()[1].detach()  # detach from history as input
+                        
+                    pred.append(decoder_input.item())
+
+                pred = np.array(pred)
+                ground_truth = target_tensor.detach().cpu().numpy().squeeze()[:-1]
+
+                if len(pred) == len(ground_truth):
+                    n_correct.append(np.all(pred == ground_truth))
+                else:
+                    n_correct.append(0)
+
+        accuracy = np.mean(n_correct)
+        results.append(accuracy)
+
+    print('Oracle Accuracy: {}'.format(np.mean(results)))
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
@@ -248,7 +310,8 @@ def main():
     # test_sequence_length()
     # test_command_length()
 
-    inspect_greedy_search()
+    # inspect_greedy_search()
+    oracle_test()
 
 
 if __name__ == '__main__':
