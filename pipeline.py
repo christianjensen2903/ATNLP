@@ -8,11 +8,11 @@ import helper
 import scan_dataset
 import wandb
 
-
-
 teacher_forcing_ratio = .5
 
-def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device='cpu'):
+
+def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion,
+                    device='cpu'):
     """A single training iteration."""
     # Reset the gradients and loss
     encoder_optimizer.zero_grad()
@@ -35,7 +35,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     for di in range(target_length):
         # Decode next token
         decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_hidden_all)
-        
+
         loss += criterion(decoder_output, target_tensor[di])
 
         # If teacher forcing is used, the next input is the target
@@ -55,14 +55,20 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
     nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
 
+    nn.utils.clip_grad_norm_(encoder.parameters(), 5.0)
+    nn.utils.clip_grad_norm_(decoder.parameters(), 5.0)
+
     encoder_optimizer.step()
     decoder_optimizer.step()
 
     return loss.item() / target_length
 
 
+def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-3,
+          verbose=False, plot=False, log_wandb=False):
+    encoder.train()
+    decoder.train()
 
-def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, plot_every=100, learning_rate=1e-2, verbose = False, plot=False, log_wandb=False):
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
@@ -75,7 +81,8 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
         X, y = dataset[random.randrange(len(dataset))]
         input_tensor, target_tensor = dataset.convert_to_tensor(X, y)
 
-        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, device=device)
+        loss = train_iteration(input_tensor.to(device), target_tensor.to(device), encoder, decoder, encoder_optimizer,
+                               decoder_optimizer, criterion, device=device)
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -99,8 +106,6 @@ def train(dataset, encoder, decoder, n_iters, device='cpu', print_every=1000, pl
     return encoder, decoder
 
 
-
-
 def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False):
     encoder.eval()
     decoder.eval()
@@ -109,9 +114,9 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
     
     with torch.no_grad():
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
-            # print(input_tensor, target_tensor)
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
-            
+
+            target_length = target_tensor.size(0)
             pred = []
 
             encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
@@ -124,8 +129,8 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
-                    
+                    decoder_input, decoder_hidden, encoder_hidden_all)
+
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
 
@@ -136,12 +141,11 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             pred = np.array(pred)
             ground_truth = target_tensor.detach().cpu().numpy().squeeze()
-            
+
             if len(pred) == len(ground_truth):
                 n_correct.append(np.all(pred == ground_truth))
             else:
                 n_correct.append(0)
-    
 
     accuracy = np.mean(n_correct)
     if verbose:
@@ -150,4 +154,53 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
     encoder.train()
     decoder.train()
 
+    return accuracy
+
+
+def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
+    encoder.eval()
+    decoder.eval()
+
+    n_correct = []  # number of correct predictions
+
+    with torch.no_grad():
+        for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
+            input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
+
+            target_length = target_tensor.size(0)
+            pred = []
+
+            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+
+            decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
+
+            decoder_hidden = encoder_hidden
+
+            for di in range(target_length-1):
+                decoder_output, decoder_hidden = decoder(
+                    decoder_input, decoder_hidden, encoder_hidden_all)
+
+                topv, topi = decoder_output.topk(1)
+                decoder_input = topi.squeeze().detach()  # detach from history as input
+
+                
+
+                if decoder_input.item() == scan_dataset.EOS_token:
+                    topv, topi = decoder_output.topk(2)
+                    decoder_input = topi.squeeze()[1].detach()  # detach from history as input
+                    
+                pred.append(decoder_input.item())
+
+            pred = np.array(pred)
+            ground_truth = target_tensor.detach().cpu().numpy().squeeze()[:-1]
+
+            if len(pred) == len(ground_truth):
+                n_correct.append(np.all(pred == ground_truth))
+            else:
+                n_correct.append(0)
+
+    accuracy = np.mean(n_correct)
+    if verbose:
+        print("Accuracy", accuracy)
+    
     return accuracy
