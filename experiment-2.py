@@ -33,7 +33,7 @@ test_dataset = scan_dataset.ScanDataset(
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
 n_iter = 100000
-n_runs = 1
+n_runs = 5
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -67,9 +67,9 @@ def run_overall_best():
                                     overall_best['ATTENTION']).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=True)
-        pickle.dump(encoder, open(f'overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
+                                          device=device, log_wandb=log_wandb)
+        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
@@ -105,9 +105,9 @@ def run_experiment_best():
 def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length'):
     results = defaultdict(list)
 
-    for _ in range(n_runs):
-        encoder = pickle.load(open('runs/overall_best_encoder_exp_2.sav', 'rb'))
-        decoder = pickle.load(open('runs/overall_best_decoder_exp_2.sav', 'rb'))
+    for i in range(n_runs):
+        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
         # Evaluate on various lengths
         for split in splits:
@@ -121,6 +121,8 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
 
             results[split].append(
                 pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+    
+    print(f'{plot_title}: {results}')
 
     # Average results
     mean_results = {}
@@ -144,7 +146,7 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
     if log_wandb:
         wandb.log({plot_title: plt})
 
-    plt.show()
+    # plt.show()
 
     # Print results
     for split, result in results.items():
