@@ -196,13 +196,11 @@ class AttnDecoderCell(d2l.Decoder):
         context = self.attention(
             query, enc_outputs, enc_outputs)
 
-        # Concatenate on the feature dimension
-        x = torch.cat((context, hidden_state), dim=-1)
-        # Reshape x as (1, batch_size, embed_size + hidden_size)
+        x = torch.cat((context, embedded), dim=-1)
+
         outputs, hidden_state = self.rnn(x, hidden_state)
         self._attention_weights = self.attention.attention_weights
-        # After fully connected layer transformation, shape of outputs:
-        # (num_steps, batch_size, output_size)
+
         outputs = F.log_softmax(self.dense(outputs[0]), dim=1)
         return outputs, hidden_state
 
