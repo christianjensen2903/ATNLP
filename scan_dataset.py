@@ -57,12 +57,12 @@ class Lang:
 
 
 class ScanDataset(Dataset):
-    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation=None):
+    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation=None, exp_3_variation=None):
 
         self.input_lang = input_lang
         self.output_lang = output_lang
 
-        self.X, self.y = self._get_data(split, split_variation, train)
+        self.X, self.y = self._get_data(split, split_variation, train, exp_3_variation)
 
     def __len__(self):
         return len(self.y)
@@ -80,7 +80,7 @@ class ScanDataset(Dataset):
         target_string = self.output_lang.sentence_from_indexes(y)
         return (input_string, target_string)
 
-    def _get_data(self, split: ScanSplit, split_variation=None, train: bool = True):
+    def _get_data(self, split: ScanSplit, split_variation=None, train: bool = True, exp_3_variation=None):
         """Retrieve the right data for the selected split"""
 
         if split == ScanSplit.SIMPLE_SPLIT:
@@ -117,9 +117,14 @@ class ScanDataset(Dataset):
 
         elif split == ScanSplit.ADD_PRIM_SPLIT:
             valid_variations = ['jump', 'turn_left']
+            split_variations = [1, 2, 4, 8, 16, 32]
+            exp_3_variations = [1, 2, 3, 4, 5]
             if split_variation and split_variation in valid_variations:
                 X_train, y_train = self._extract_data_from_file(f'tasks_train_addprim_{split_variation}.txt', split)
                 X_test, y_test = self._extract_data_from_file(f'tasks_test_addprim_{split_variation}.txt', split)
+            elif (exp_3_variation in exp_3_variations) and split_variation in split_variations:
+                X_train, y_train = self._extract_data_from_file(f'/with_additional_examples/tasks_train_addprim_complex_jump_num{split_variation}_rep{exp_3_variation}.txt', split)
+                X_test, y_test = self._extract_data_from_file(f'/with_additional_examples/tasks_test_addprim_complex_jump_num{split_variation}_rep{exp_3_variation}.txt', split)
             else:
                 raise Exception(
                     f'A valid split variation must be provided for this split. Valid variations are: {valid_variations}')
