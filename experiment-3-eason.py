@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import attn_md
 import scan_dataset
 import models
+import models2
 import pipeline
 import torch
 import wandb

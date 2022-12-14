@@ -110,7 +110,8 @@ class AttnDecoderCell(nn.Module):
         )
         self.W = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size), device=device))
         self.U = nn.Parameter(torch.randn((self.hidden_size, self.hidden_size), device=device))
-        self.v = nn.Parameter(torch.randn((self.hidden_size, 1), device=device))
+        # self.v = nn.Parameter(torch.randn((self.hidden_size, 1), device=device))
+        self.v = nn.Parameter(torch.randn((self.hidden_size), device=device))
 
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
 
@@ -121,8 +122,14 @@ class AttnDecoderCell(nn.Module):
     def e(self, g, h):
         """Computes the similarity between the previous decoder hidden state g and an encoder hidden state h"""
         # vT tanh(W g_(i-1) + U h_t)
-        return self.v.T @ torch.tanh(self.W * g + self.U * h)
+        # return self.v.T @ torch.tanh(self.W * g + self.U * h)
+        g=g.squeeze() # hidsz
+        # print(h.shape)
+        # print((self.U * h).shape)
+        # print((self.W * g).shape)
+        # print(self.W.matmul(g).shape)
         # return self.v.dot( torch.tanh(self.W * g + self.U * h))
+        return self.v.dot( torch.tanh(self.W.matmul(g) + self.U.matmul(h)))
 
     def alpha(self, encoder_hiddens, input_hidden, t):
         """Computes the attention weight for a given encoder hidden state"""
@@ -137,6 +144,21 @@ class AttnDecoderCell(nn.Module):
 
         return numerator / denominator
 
+    def alpha_sfmx(self, encoder_hiddens, input_hidden, t):
+        """Computes the attention weight for a given encoder hidden state"""
+        # alpha_it = exp(e(g_(i-1), h_t)) / sum(exp(e(g_(i-1), h_j)))
+        T = len(encoder_hiddens)
+        numerator = torch.exp(self.e(input_hidden, encoder_hiddens[t]))
+
+        eList = []
+
+        for j in range(T):
+            eList.append(self.e(input_hidden, encoder_hiddens[j]))
+
+        print(torch.stack(eList).shape)
+        assert False
+        return numerator / denominator
+
     def forward(self, input, input_hidden, encoder_hiddens):
 
         embedded = self.embedding(input).view(1, 1, -1)
@@ -146,7 +168,7 @@ class AttnDecoderCell(nn.Module):
         c_i = 0
 
         for t in range(len(encoder_hiddens)):
-            alpha_it = self.alpha(encoder_hiddens, input_hidden, t)
+            alpha_it = self.alpha_sfmx(encoder_hiddens, input_hidden, t)
             h_t = encoder_hiddens[t]
             c_i += alpha_it * h_t
 
