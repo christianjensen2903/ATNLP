@@ -42,9 +42,10 @@ class EncoderCell(nn.Module):
 
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, device='cpu', n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(self, input_size, hidden_size, max_length=100, device='cpu', n_layers=1, rnn_type='RNN', dropout_p=0.1):
         super(EncoderRNN, self).__init__()
         self.device = device
+        self.all_hidden_states = torch.zeros(max_length, hidden_size, device=device)
         self.encoder_cell = EncoderCell(input_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 
     def forward(self, input):
@@ -54,12 +55,13 @@ class EncoderRNN(nn.Module):
 
         for ei in range(input_length):
             encoder_outputs, encoder_hidden = self.encoder_cell(input[ei], encoder_hidden)
+            self.all_hidden_states[ei] = encoder_hidden[0][0].detach()
 
         return encoder_outputs, encoder_hidden
 
 
 class DecoderCell(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu', max_length=100):
         super(DecoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -172,12 +174,14 @@ class AdditiveAttention(nn.Module):
         features = queries + keys
         features = torch.tanh(features)
         scores = self.w_v(features)
-        self.attention_weights = F.softmax(scores, dim=-1)
-        return torch.bmm(self.attention_weights, values)
+        self.attention_weights = F.softmax(scores, dim=0)
+
+        bmm = torch.bmm(self.attention_weights, values)
+        return torch.sum(bmm, dim=0)
 
 class AttnDecoderCell(d2l.Decoder):
     def __init__(self, ouput_size, hidden_size, num_layers, rnn_type,
-                 dropout_p=0, device='cpu'):
+                 dropout_p=0, device='cpu', max_length=100):
         super().__init__()
         self.attention = AdditiveAttention(num_hiddens=hidden_size, key_size=hidden_size, query_size=hidden_size)
         self.embedding = nn.Embedding(ouput_size, hidden_size)
@@ -188,13 +192,18 @@ class AttnDecoderCell(d2l.Decoder):
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, input, hidden_state, enc_outputs):
+        
+        enc_outputs = enc_outputs.unsqueeze(0).permute(1, 0, 2)
 
         embedded = self.embedding(input)
         embedded = self.dropout(embedded)
+        embedded = F.relu(embedded)
 
         query = torch.unsqueeze(hidden_state[-1], dim=1)
         context = self.attention(
             query, enc_outputs, enc_outputs)
+
+        context = context.unsqueeze(0)
 
         x = torch.cat((context, embedded), dim=-1)
 
@@ -211,12 +220,13 @@ class AttnDecoderCell(d2l.Decoder):
 
 class DecoderRNN(nn.Module):
     def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False,
-                 device='cpu'):
+                 device='cpu', max_length=100):
         super(DecoderRNN, self).__init__()
+
 
         self.attention = attention
         if attention:
-            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
+            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device, max_length)
         else:
             self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
 

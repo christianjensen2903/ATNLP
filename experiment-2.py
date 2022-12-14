@@ -33,8 +33,8 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 10000
-n_runs = 1
+n_iter = 100000
+n_runs = 5
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -82,20 +82,22 @@ def run_overall_best():
 def run_experiment_best():
     results = []
     # Train 5 times and average the results
-    for _ in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device,
+    for run in range(n_runs):
+        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT']).to(device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'],
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT'],
-                                    experiment_best['ATTENTION']).to(device)
+                                    experiment_best['ATTENTION'], max_length=MAX_LENGTH).to(device)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open('experiment_best_encoder_exp_2.sav', 'wb'))
-        pickle.dump(decoder, open('experiment_best_decoder_exp_2.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+        pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_2_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_2_run_{run}.sav', 'wb'))
+        acc = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
+        print(acc)
+        results.append(acc)
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for experiment best: {}'.format(avg_accuracy))

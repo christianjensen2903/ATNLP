@@ -33,7 +33,7 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     target_length = target_tensor.size(0)
     for di in range(target_length):
         # Decode next token
-        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder_outputs)
+        decoder_output, decoder_hidden = decoder(decoder_input, decoder_hidden, encoder.all_hidden_states)
 
         loss += criterion(decoder_output, target_tensor[di])
 
@@ -115,7 +115,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
             target_length = target_tensor.size(0)
             pred = []
 
-            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+            encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
 
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
@@ -125,7 +125,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder_hidden_all)
+                    decoder_input, decoder_hidden, encoder.all_hidden_states)
 
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.detach()  # detach from history as input
@@ -166,15 +166,16 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
             target_length = target_tensor.size(0)
             pred = []
 
-            encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+            encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
 
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
             decoder_hidden = encoder_hidden
 
             for di in range(target_length-1):
+                
                 decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder_hidden_all)
+                    decoder_input, decoder_hidden, encoder.all_hidden_states)
 
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.squeeze().detach()  # detach from history as input
