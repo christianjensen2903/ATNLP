@@ -4,12 +4,12 @@ import models
 import pipeline
 import torch
 
-split_variations = list(reversed([1, 2, 4, 8, 16, 32]))
+split_variations = [1, 2, 4, 8, 16, 32]
 exp_3_variations = [1, 2, 3, 4, 5]
 
 config = {
     'HIDDEN_SIZE': 100, # 25, 50, 100, 200, or 400
-    'RNN_TYPE': 'LSTM', # RNN, GRU or LSTM
+    'RNN_TYPE': 'GRU', # RNN, GRU or LSTM
     'N_LAYERS': 1, # 1 or 2
     'DROPOUT': 0.1, # 0, 0.1 or 0.5
     'ATTENTION': True, # True or False
