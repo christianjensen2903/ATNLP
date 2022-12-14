@@ -90,7 +90,7 @@ def run_overall_best():
 def run_experiment_best():
     results = []
     # Train 5 times and average the results
-    for _ in range(n_runs):
+    for run in range(n_runs):
         encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT']).to(device)
@@ -99,12 +99,17 @@ def run_experiment_best():
                                     experiment_best['DROPOUT'],
                                     experiment_best['ATTENTION']).to(device)
 
+        print(encoder)
+        print(decoder)
+
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open('experiment_best_encoder_exp_2.sav', 'wb'))
-        pickle.dump(decoder, open('experiment_best_decoder_exp_2.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
-
+        pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_3_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_3_run_{run}.sav', 'wb'))
+        acc = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
+        results.append(acc)
+        print(f'Accuracy for run {run}: {acc}')
+        
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for experiment best: {}'.format(avg_accuracy))
     if log_wandb:
