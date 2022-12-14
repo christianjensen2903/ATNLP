@@ -18,7 +18,7 @@ log_wandb = False
 # n_iter = 100
 n_iter = 100000
 # n_runs = 5
-n_runs = 1
+n_runs = 5
 
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
@@ -68,7 +68,7 @@ def run_overall_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device,
+        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(
             device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
@@ -91,7 +91,7 @@ def run_experiment_best():
     results = []
     # Train 5 times and average the results
     for _ in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device,
+        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT']).to(device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'],

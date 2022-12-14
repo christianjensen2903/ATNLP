@@ -179,7 +179,7 @@ class AdditiveAttention(nn.Module):
         bmm = torch.bmm(self.attention_weights, values)
         return torch.sum(bmm, dim=0)
 
-class AttnDecoderCell(d2l.Decoder):
+class AttnDecoderCell(nn.Module):
     def __init__(self, ouput_size, hidden_size, num_layers, rnn_type,
                  dropout_p=0, device='cpu', max_length=100):
         super().__init__()
@@ -190,6 +190,7 @@ class AttnDecoderCell(d2l.Decoder):
             dropout=dropout_p)
         self.dense = nn.Linear(hidden_size, ouput_size)
         self.dropout = nn.Dropout(dropout_p)
+        #self.attention_weights = []
 
     def forward(self, input, hidden_state, enc_outputs):
         
@@ -208,7 +209,7 @@ class AttnDecoderCell(d2l.Decoder):
         x = torch.cat((context, embedded), dim=-1)
 
         outputs, hidden_state = self.rnn(x, hidden_state)
-        self._attention_weights = self.attention.attention_weights
+        #self._attention_weights.append(self.attention.attention_weights)
 
         outputs = F.log_softmax(self.dense(outputs[0]), dim=1)
         return outputs, hidden_state
