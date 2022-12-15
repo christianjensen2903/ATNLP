@@ -188,7 +188,7 @@ class AttnDecoderCell(nn.Module):
         self.rnn = nn.GRU(
             hidden_size*2, hidden_size, num_layers,
             dropout=dropout_p)
-        self.dense = nn.Linear(hidden_size, ouput_size)
+        self.dense = nn.Linear(hidden_size*2, ouput_size)
         self.dropout = nn.Dropout(dropout_p)
         #self.attention_weights = []
 
@@ -198,7 +198,7 @@ class AttnDecoderCell(nn.Module):
 
         embedded = self.embedding(input)
         embedded = self.dropout(embedded)
-        embedded = F.relu(embedded)
+        # embedded = F.relu(embedded)
 
         query = torch.unsqueeze(hidden_state[-1], dim=1)
         context = self.attention(
@@ -210,8 +210,8 @@ class AttnDecoderCell(nn.Module):
 
         outputs, hidden_state = self.rnn(x, hidden_state)
         #self._attention_weights.append(self.attention.attention_weights)
-
-        outputs = F.log_softmax(self.dense(outputs[0]), dim=1)
+        x = torch.cat((context, hidden_state), dim=-1)
+        outputs = F.log_softmax(self.dense(x[0]), dim=1)
         return outputs, hidden_state
 
     @property

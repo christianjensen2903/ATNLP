@@ -34,7 +34,7 @@ test_dataset = scan_dataset.ScanDataset(
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
 n_iter = 100000
-n_runs = 5
+n_runs = 1
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
