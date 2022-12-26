@@ -170,12 +170,12 @@ def test_command_length():
     length_generalization(splits, 'Command Length', 'Command Length')
 
 
-def inspect_greedy_search():
+def inspect_greedy_search(experiment_best=False):
     results = []
 
     for i in range(5): # n_runs
-        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
-        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
+        encoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_encoder_exp_2_run_{i}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
 
         test_dataset = scan_dataset.ScanDataset(
@@ -196,39 +196,40 @@ def inspect_greedy_search():
 
                 target_length = target_tensor.size(0)
 
-                encoder_hidden, encoder_hidden_all = encoder(input_tensor.to(device))
+                encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
 
                 decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
                 decoder_hidden = encoder_hidden
 
-                greedy_prob = 1.0
+                greedy_prob = 0
 
                 MAX_LENGTH = 500
                 for di in range(MAX_LENGTH):
                     decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
+                        decoder_input, decoder_hidden, encoder.all_hidden_states)
 
                     topv, topi = decoder_output.topk(1)
                     decode_log_prob = topv.squeeze().detach().item()
-                    decoder_input = topi.squeeze().detach()  # detach from history as input
+                    decoder_input = topi.detach()  # detach from history as input
 
-                    greedy_prob *= decode_log_prob
+                    greedy_prob += decode_log_prob
 
                     if decoder_input.item() == scan_dataset.EOS_token:
                         break
+    
+                decoder_hidden = encoder_hidden
 
-
-                truth_prob = 1.0
+                truth_prob = 0
                 for di in range(target_length):
                     decoder_output, decoder_hidden = decoder(
-                        decoder_input, decoder_hidden, encoder_hidden_all)
+                        decoder_input, decoder_hidden, encoder.all_hidden_states)
 
                     prob = decoder_output.squeeze().detach()[target_tensor[di]].item()
 
-                    truth_prob *= prob
-
-                    decoder_input = target_tensor[di]
+                    truth_prob += prob
+                    
+                    decoder_input = target_tensor[di].unsqueeze(0)
 
 
                 greedy_greatest = greedy_prob > truth_prob
@@ -238,7 +239,7 @@ def inspect_greedy_search():
     # Calcate average amount of greedy search being greater than truth
     pct_greedy_greatest = [sum(data) / len(data) for data in results]
     avg_greedy_greatest = sum(pct_greedy_greatest) / len(pct_greedy_greatest)
-    print('Average amount of greedy search being greater than truth: {}'.format(avg_greedy_greatest))
+    print(f'Average amount of greedy search being greater than truth for {"experiment" if experiment_best else "overall"} best: {avg_greedy_greatest}')
 
 
 def oracle_test():
@@ -271,12 +272,13 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
-    # run_overall_best()
-    run_experiment_best()
+    run_overall_best()
+    # run_experiment_best()
     # test_sequence_length()
     # test_command_length()
 
-    # inspect_greedy_search()
+    # inspect_greedy_search(experiment_best=True)
+    inspect_greedy_search(experiment_best=False)
     # oracle_test()
     # test_sequence_length(oracle=True)
 
