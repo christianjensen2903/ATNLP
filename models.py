@@ -85,7 +85,6 @@ class DecoderCell(nn.Module):
     def forward(self, decoder_input, hidden):
         output = self.embedding(decoder_input).view(1, 1, -1)
         output = self.dropout(output)
-        output = F.relu(output)
 
         output, hidden = self.rnn(output, hidden)
         output = self.softmax(self.out(output[0]))
