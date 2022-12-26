@@ -60,8 +60,8 @@ def run_overall_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device,
-                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(
+        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
+                                    n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
             device)
         decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
