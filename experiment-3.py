@@ -2,10 +2,8 @@ from collections import defaultdict
 
 from torch.utils.data import DataLoader
 
-import attn_md
 import scan_dataset
 import models
-import models2
 import pipeline
 import torch
 import wandb
@@ -16,16 +14,11 @@ import pickle
 from tqdm import tqdm
 
 log_wandb = False
-# log_wandb = True
 
-# n_iter = 5100
 n_iter = 100000
-# n_runs = 5
 n_runs = 5
 
-print("has cuda?",torch.cuda.is_available())
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-device = torch.device('cpu')
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 
@@ -123,43 +116,14 @@ def run_experiment_best():
         wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
-def run_experiment_best_d2i():
-    results = []
-    # Train 5 times and average the results
-    for _ in range(n_runs):
-
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], device,
-                                    experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
-                                    experiment_best['DROPOUT']).to(device)
-        decoder= attn_md.BahdanauAttnDecoderRNN(experiment_best['HIDDEN_SIZE'],
-                                                train_dataset.output_lang.n_words,
-                                                MAX_LENGTH,experiment_best['N_LAYERS'],dropout_p=0.5)
-        # decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'],
-        #                             experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
-        #                             experiment_best['DROPOUT'],
-        #                             experiment_best['ATTENTION']).to(device)
-
-        encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open('experiment_best_encoder_exp_2.sav', 'wb'))
-        pickle.dump(decoder, open('experiment_best_decoder_exp_2.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
-
-    avg_accuracy = sum(results) / len(results)
-    print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-    if log_wandb:
-        wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
-
-
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
     if log_wandb:
         wandb.login()
-        wandb.init(project="experiment-3e", entity="atnlp")
+        wandb.init(project="experiment-3", entity="atnlp")
 
     # run_overall_best()
     run_experiment_best()
-    # run_experiment_best_d2i() # not yet working!
     # test_sequence_length()
     # test_command_length()
 
