@@ -105,12 +105,12 @@ def run_experiment_best():
         wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
 
 
-def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False):
+def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False, experiment_best=False):
     results = defaultdict(list)
 
     for i in range(n_runs):
-        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
-        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
+        encoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_encoder_exp_2_run_{i}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
         # Evaluate on various lengths
         for split in splits:
@@ -158,10 +158,10 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
         print('Split: {}, Accuracy: {}'.format(split, sum(result) / len(result)))
 
 
-def test_sequence_length(oracle=False):
+def test_sequence_length(oracle=False, experiment_best=False):
     # Test how generalization works for different lengths
     splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
-    length_generalization(splits, oracle=oracle)
+    length_generalization(splits, oracle=oracle, experiment_best=experiment_best)
 
 
 def test_command_length():
@@ -242,13 +242,13 @@ def inspect_greedy_search(experiment_best=False):
     print(f'Average amount of greedy search being greater than truth for {"experiment" if experiment_best else "overall"} best: {avg_greedy_greatest}')
 
 
-def oracle_test():
+def oracle_test(experiment_best=False):
 
     results = []
 
     for i in range(5): # n_runs
-        encoder = pickle.load(open(f'runs/overall_best_encoder_exp_2_run_{i}.sav', 'rb'))
-        decoder = pickle.load(open(f'runs/overall_best_decoder_exp_2_run_{i}.sav', 'rb'))
+        encoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_encoder_exp_2_run_{i}.sav', 'rb'))
+        decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
 
         test_dataset = scan_dataset.ScanDataset(
@@ -262,9 +262,9 @@ def oracle_test():
 
         results.append(accuracy)
 
-        
+    print(f'Oracle Accuracy for {"experiment" if experiment_best else "overall"} best: {np.mean(results)}')
 
-    print('Oracle Accuracy: {}'.format(np.mean(results)))
+
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
@@ -272,15 +272,16 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
-    run_overall_best()
+    # run_overall_best()
     # run_experiment_best()
     # test_sequence_length()
     # test_command_length()
 
     # inspect_greedy_search(experiment_best=True)
-    inspect_greedy_search(experiment_best=False)
+    # inspect_greedy_search(experiment_best=False)
     # oracle_test()
-    # test_sequence_length(oracle=True)
+    # oracle_test(experiment_best=True)
+    test_sequence_length(oracle=True, experiment_best=True)
 
 
 if __name__ == '__main__':

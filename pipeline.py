@@ -112,7 +112,6 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
 
-            target_length = target_tensor.size(0)
             pred = []
 
             encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
@@ -163,7 +162,7 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
 
-            target_length = target_tensor.size(0)
+            
             pred = []
 
             encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
@@ -172,21 +171,23 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
 
             decoder_hidden = encoder_hidden
 
+            target_length = target_tensor.size(0)
+
             for di in range(target_length-1):
                 
                 decoder_output, decoder_hidden = decoder(
                     decoder_input, decoder_hidden, encoder.all_hidden_states)
 
                 topv, topi = decoder_output.topk(1)
-                decoder_input = topi.squeeze().detach()  # detach from history as input
+                decoder_input = topi.detach()  # detach from history as input
 
                 
 
                 if decoder_input.item() == scan_dataset.EOS_token:
                     topv, topi = decoder_output.topk(2)
-                    decoder_input = topi.squeeze()[1].detach()  # detach from history as input
+                    decoder_input = topi[:, 1].detach().unsqueeze(0)  # detach from history as input
                     
-                pred.append(decoder_input.item())
+                pred.append(decoder_input.squeeze().item())
 
             pred = np.array(pred)
             ground_truth = target_tensor.detach().cpu().numpy().squeeze()[:-1]
