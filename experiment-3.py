@@ -77,8 +77,8 @@ def run_overall_best():
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
+        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_3_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_3_run_{run}.sav', 'wb'))
         results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
 
     avg_accuracy = sum(results) / len(results)
@@ -98,9 +98,6 @@ def run_experiment_best():
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT'],
                                     experiment_best['ATTENTION']).to(device)
-
-        print(encoder)
-        print(decoder)
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
@@ -122,14 +119,8 @@ def main():
         wandb.login()
         wandb.init(project="experiment-3", entity="atnlp")
 
-    # run_overall_best()
+    run_overall_best()
     run_experiment_best()
-    # test_sequence_length()
-    # test_command_length()
-
-    # inspect_greedy_search()
-    # oracle_test()
-    # test_sequence_length(oracle=True)
 
 
 if __name__ == '__main__':
