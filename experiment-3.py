@@ -17,6 +17,7 @@ log_wandb = False
 
 n_iter = 100000
 n_runs = 5
+split_variation = 'jump'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
@@ -30,7 +31,7 @@ train_dataset = scan_dataset.ScanDataset(
     input_lang=input_lang,
     output_lang=output_lang,
     train=True,
-    split_variation='turn_left'
+    split_variation=split_variation
 )
 
 test_dataset = scan_dataset.ScanDataset(
@@ -38,7 +39,7 @@ test_dataset = scan_dataset.ScanDataset(
     input_lang=input_lang,
     output_lang=output_lang,
     train=False,
-    split_variation='turn_left'
+    split_variation=split_variation
 )
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
@@ -77,10 +78,11 @@ def run_overall_best():
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_3_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_3_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
-
+        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_3_{split_variation}_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_3_{split_variation}_run_{run}.sav', 'wb'))
+        acc = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
+        results.append(acc)
+        print(f'Accuracy for run {run}: {acc}')
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))
     if log_wandb:
@@ -101,8 +103,8 @@ def run_experiment_best():
 
         encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_3_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_3_run_{run}.sav', 'wb'))
+        pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_3_{split_variation}_run_{run}.sav', 'wb'))
+        pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_3_{split_variation}_run_{run}.sav', 'wb'))
         acc = pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False)
         results.append(acc)
         print(f'Accuracy for run {run}: {acc}')
