@@ -5,7 +5,8 @@ from enum import Enum
 
 SOS_token = 0
 EOS_token = 1
-OOV_token = 2
+UNK_token = 2
+PAD_token = 3
 
 
 class ScanSplit(Enum):
@@ -19,7 +20,11 @@ class Lang:
     def __init__(self):
         self.word2index = {}
         self.word2count = {}
-        self.index2word = {SOS_token: "SOS", EOS_token: "EOS", OOV_token: 'OOV'}
+        self.index2word = {
+            SOS_token: "<SOS>",
+            EOS_token: "<EOS>",
+            UNK_token: '<UNK>',
+            PAD_token: '<PAD>'}
         self.n_words = len(self.index2word)  # Count tokens
 
         self.max_length = 0
@@ -42,7 +47,7 @@ class Lang:
 
     def indexes_from_sentence(self, sentence: str):
         """Get word ids from sentence"""
-        indexes = [self.word2index.get(word, OOV_token) for word in sentence.split()]
+        indexes = [self.word2index.get(word, UNK_token) for word in sentence.split()]
         return indexes
 
     def sentence_from_indexes(self, indexes: list):
