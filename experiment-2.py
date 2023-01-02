@@ -272,7 +272,7 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp")
 
-    # run_overall_best()
+    run_overall_best()
     # run_experiment_best()
     # test_sequence_length()
     # test_command_length()
@@ -281,7 +281,7 @@ def main():
     # inspect_greedy_search(experiment_best=False)
     # oracle_test()
     # oracle_test(experiment_best=True)
-    test_sequence_length(oracle=True, experiment_best=True)
+    # test_sequence_length(oracle=True, experiment_best=True)
 
 
 if __name__ == '__main__':

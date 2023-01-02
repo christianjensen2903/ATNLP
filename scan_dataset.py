@@ -2,6 +2,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 from enum import Enum
+from torch.nn.utils.rnn import pad_sequence
+from operator import itemgetter
 
 SOS_token = 0
 EOS_token = 1
@@ -58,7 +60,7 @@ class Lang:
         """Convert sentence to torch tensor"""
         indexes = self.indexes_from_sentence(sentence)
         indexes.append(EOS_token)
-        return torch.tensor(indexes, dtype=torch.long).view(-1, 1)
+        return torch.tensor(indexes, dtype=torch.long)
 
 
 class ScanDataset(Dataset):
@@ -73,17 +75,38 @@ class ScanDataset(Dataset):
         return len(self.y)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+
+        # Convert to list if only one sample
+        if len(idx) == 1:
+            return [self.X[idx[0]]], [self.y[idx[0]]]
+
+        X = list(itemgetter(*idx)(self.X))
+        y = list(itemgetter(*idx)(self.y))
+
+        return X, y
 
     def convert_to_tensor(self, X, y):
-        input_tensor = self.input_lang.tensor_from_sentence(X)
-        target_tensor = self.output_lang.tensor_from_sentence(y)
+
+        for i in range(len(X)):
+            X[i] = self.input_lang.tensor_from_sentence(X[i])
+            y[i] = self.output_lang.tensor_from_sentence(y[i])
+
+        # collate the batch
+        input_tensor, target_tensor = self.collate(X, y)
         return (input_tensor, target_tensor)
 
     def convert_to_string(self, X, y):
         input_string = self.input_lang.sentence_from_indexes(X)
         target_string = self.output_lang.sentence_from_indexes(y)
         return (input_string, target_string)
+
+
+    def collate(self, src_batch, tgt_batch):
+        """Collate a batch of data into padded sequences."""
+
+        src_batch = pad_sequence(src_batch, padding_value=PAD_token, batch_first=True)
+        tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_token, batch_first=True)
+        return src_batch, tgt_batch
 
     def _get_data(self, split: ScanSplit, split_variation=None, train: bool = True):
         """Retrieve the right data for the selected split"""

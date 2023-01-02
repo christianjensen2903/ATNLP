@@ -3,12 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torch import nn
-from d2l import torch as d2l
 
-
-class EncoderCell(nn.Module):
+class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
-        super(EncoderCell, self).__init__()
+        super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
         self.RNN_type = rnn_type
@@ -22,42 +20,17 @@ class EncoderCell(nn.Module):
             input_size=self.hidden_size,
             hidden_size=self.hidden_size,
             num_layers=self.n_layers,
-            dropout=dropout_p
+            dropout=dropout_p,
+            batch_first=True
         )
 
-    def forward(self, encoder_input, hidden):
-        output = self.embedding(encoder_input).view(1, 1, -1)
-        output = self.dropout(output)
-        output, hidden = self.rnn(output, hidden)
-        return output, hidden
-
-    def init_hidden(self):
-        if self.RNN_type == 'LSTM':
-            return (
-                torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device),
-                torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device)
-            )
-        else:
-            return torch.zeros(self.n_layers, 1, self.hidden_size, device=self.device)
-
-
-class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, max_length=100, device='cpu', n_layers=1, rnn_type='RNN', dropout_p=0.1):
-        super(EncoderRNN, self).__init__()
-        self.device = device
-        self.all_hidden_states = torch.zeros(max_length, hidden_size, device=device)
-        self.encoder_cell = EncoderCell(input_size, hidden_size, n_layers, rnn_type, dropout_p, device)
-
     def forward(self, input):
-        encoder_hidden = self.encoder_cell.init_hidden()
+        input = self.embedding(input)
+        input = self.dropout(input)
+        output, hidden = self.rnn(input)
 
-        input_length = input.size(0)
-
-        for ei in range(input_length):
-            encoder_outputs, encoder_hidden = self.encoder_cell(input[ei], encoder_hidden)
-            self.all_hidden_states[ei] = encoder_hidden[0][0].detach()
-
-        return encoder_outputs, encoder_hidden
+        # last layer hidden state, all hidden state
+        return hidden, output
 
 
 class DecoderCell(nn.Module):
@@ -76,18 +49,21 @@ class DecoderCell(nn.Module):
             input_size=self.hidden_size,
             hidden_size=self.hidden_size,
             num_layers=self.n_layers,
-            dropout=dropout_p
+            dropout=dropout_p,
+            batch_first=True
         )
 
         self.out = nn.Linear(self.hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, decoder_input, hidden):
-        output = self.embedding(decoder_input).view(1, 1, -1)
+        output = self.embedding(decoder_input)
         output = self.dropout(output)
 
         output, hidden = self.rnn(output, hidden)
-        output = self.softmax(self.out(output[0]))
+
+        output = self.out(output[:, -1, :])
+        output = self.softmax(output)
         return output, hidden
 
 
@@ -119,10 +95,10 @@ class AttnDecoderCell(nn.Module):
         self.embedding = nn.Embedding(ouput_size, hidden_size)
         self.rnn = nn.GRU(
             hidden_size*2, hidden_size, num_layers,
-            dropout=dropout_p)
+            dropout=dropout_p,
+            batch_first=True)
         self.dense = nn.Linear(hidden_size*2, ouput_size)
         self.dropout = nn.Dropout(dropout_p)
-        #self.attention_weights = []
 
     def forward(self, input, hidden_state, enc_outputs):
         
@@ -130,7 +106,6 @@ class AttnDecoderCell(nn.Module):
 
         embedded = self.embedding(input)
         embedded = self.dropout(embedded)
-        # embedded = F.relu(embedded)
 
         query = torch.unsqueeze(hidden_state[-1], dim=1)
         context = self.attention(
@@ -141,14 +116,9 @@ class AttnDecoderCell(nn.Module):
         x = torch.cat((context, embedded), dim=-1)
 
         outputs, hidden_state = self.rnn(x, hidden_state)
-        #self._attention_weights.append(self.attention.attention_weights)
         x = torch.cat((context, hidden_state), dim=-1)
         outputs = F.log_softmax(self.dense(x[0]), dim=1)
         return outputs, hidden_state
-
-    @property
-    def attention_weights(self):
-        return self._attention_weights
 
 
 class DecoderRNN(nn.Module):
