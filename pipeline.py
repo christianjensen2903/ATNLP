@@ -26,7 +26,6 @@ def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optim
     encoder_hidden, all_encoder_hidden = encoder(input_tensor)
 
     # Prepare the initial decoder input
-    # decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
     decoder_input = torch.tensor([[scan_dataset.SOS_token]* batch_size], device=device).transpose(0, 1)
 
     decoder_hidden = encoder_hidden
@@ -116,8 +115,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             pred = []
 
-            encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
-
+            encoder_hidden, all_encoder_hidden = encoder(input_tensor)
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
             decoder_hidden = encoder_hidden
@@ -126,7 +124,7 @@ def evaluate(dataset, encoder, decoder, max_length, device='cpu', verbose=False)
 
             for di in range(target_length):
                 decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder.all_hidden_states)
+                    decoder_input, decoder_hidden, all_encoder_hidden)
 
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.detach()  # detach from history as input
@@ -164,11 +162,9 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
         for input_tensor, target_tensor in tqdm(dataset, total=len(dataset), leave=False, desc="Evaluating"):
             input_tensor, target_tensor = dataset.convert_to_tensor(input_tensor, target_tensor)
 
-            
             pred = []
 
-            encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
-
+            encoder_hidden, all_encoder_hidden = encoder(input_tensor)
             decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
 
             decoder_hidden = encoder_hidden
@@ -178,13 +174,12 @@ def oracle_eval(dataset, encoder, decoder, device='cpu', verbose=False):
             for di in range(target_length-1):
                 
                 decoder_output, decoder_hidden = decoder(
-                    decoder_input, decoder_hidden, encoder.all_hidden_states)
+                    decoder_input, decoder_hidden, all_encoder_hidden)
 
                 topv, topi = decoder_output.topk(1)
                 decoder_input = topi.detach()  # detach from history as input
 
-                
-
+            
                 if decoder_input.item() == scan_dataset.EOS_token:
                     topv, topi = decoder_output.topk(2)
                     decoder_input = topi[:, 1].detach().unsqueeze(0)  # detach from history as input

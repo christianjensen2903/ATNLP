@@ -77,7 +77,9 @@ class ScanDataset(Dataset):
     def __getitem__(self, idx):
 
         # Convert to list if only one sample
-        if len(idx) == 1:
+        if isinstance(idx, int):
+            return [self.X[idx]], [self.y[idx]]
+        elif len(idx) == 1:
             return [self.X[idx[0]]], [self.y[idx[0]]]
 
         X = list(itemgetter(*idx)(self.X))
