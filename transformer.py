@@ -44,7 +44,8 @@ class Seq2SeqTransformer(nn.Module):
                  src_vocab_size: int,
                  tgt_vocab_size: int,
                  dim_feedforward: int = 512,
-                 dropout: float = 0.1):
+                 dropout: float = 0.1,
+                 pad_idx: int = 1):
         super(Seq2SeqTransformer, self).__init__()
         self.transformer = Transformer(d_model=emb_size,
                                        nhead=nhead,
@@ -58,18 +59,28 @@ class Seq2SeqTransformer(nn.Module):
         self.positional_encoding = PositionalEncoding(
             emb_size, dropout=dropout)
 
+        self.pad_idx = pad_idx
+
     def forward(self,
                 src: Tensor,
-                trg: Tensor,
-                src_mask: Tensor,
-                tgt_mask: Tensor,
-                src_padding_mask: Tensor,
-                tgt_padding_mask: Tensor,
-                memory_key_padding_mask: Tensor):
-        src_emb = self.positional_encoding(self.src_tok_emb(src))
-        tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
-        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None,
-                                src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
+                tgt: Tensor):
+
+        # Get masks for src and tgt
+        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = self.create_mask(src, tgt)
+        
+        # Embed sequence
+        src = self.src_tok_emb(src)
+        tgt = self.tgt_tok_emb(tgt)
+
+        # Add positional encoding
+        src = self.positional_encoding(src)
+        tgt = self.positional_encoding(tgt)
+
+        # Pass through transformer
+        outs = self.transformer(src, tgt, src_mask, tgt_mask, None,
+                                src_padding_mask, tgt_padding_mask)
+
+        # Generate output
         return self.generator(outs)
 
     def encode(self, src: Tensor, src_mask: Tensor):
@@ -80,3 +91,15 @@ class Seq2SeqTransformer(nn.Module):
         return self.transformer.decoder(self.positional_encoding(
                           self.tgt_tok_emb(tgt)), memory,
                           tgt_mask)
+
+
+    def create_mask(self, src, tgt):
+        src_seq_len = src.shape[0]
+        tgt_seq_len = tgt.shape[0]
+
+        tgt_mask = self.transformer.generate_square_subsequent_mask(tgt_seq_len)
+        src_mask = torch.zeros((src_seq_len, src_seq_len)).type(torch.bool)
+
+        src_padding_mask = (src == self.pad_idx).transpose(0, 1)
+        tgt_padding_mask = (tgt == self.pad_idx).transpose(0, 1)
+        return src_mask, tgt_mask, src_padding_mask, tgt_padding_mask
