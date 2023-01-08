@@ -14,7 +14,7 @@ from transformer import Seq2SeqTransformer
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
 
-train_dataset = scan_dataset.ScanDataset(
+dataset = scan_dataset.ScanDataset(
     split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
@@ -28,7 +28,7 @@ test_dataset = scan_dataset.ScanDataset(
     train=False
 )
 
-MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
+MAX_LENGTH = max(dataset.input_lang.max_length, dataset.output_lang.max_length)
 
 
 SRC_VOCAB_SIZE = input_lang.n_words
@@ -40,53 +40,68 @@ BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
 
+n_iters = 10
 
-transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE,
+loss_fn = torch.nn.CrossEntropyLoss(ignore_index=scan_dataset.PAD_token)
+
+
+model = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE,
                                  NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
 
-# # Sample a random sentence from the training set
-X, y = train_dataset[0]
 
-# Convert to torch tensor
-X, y = train_dataset.convert_to_tensor(X, y)
+def train_epoch(model, optimizer):
+    model.train()
+    losses = 0
 
-print(transformer(X, y))
+    for _ in range(n_iters):
+        random_batch = np.random.choice(len(dataset), BATCH_SIZE)
+        X, y = dataset[random_batch]
 
+        src, tgt = dataset.convert_to_tensor(X, y)
 
+        # tgt_input = tgt[:-1, :]
 
+    
+        logits = model(src, tgt)
 
-# lang = scan_dataset.Lang()
+        optimizer.zero_grad()
 
-# train_dataset = scan_dataset.ScanDataset(
-#     split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
-#     input_lang=lang,
-#     output_lang=lang,
-#     train=True
-# )
+        # tgt_out = tgt[1:, :]
+        loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt.reshape(-1))
+        loss.backward()
 
-# # Initialize a model without pretrained weights
-# config = MarianConfig(
-#     vocab_size=lang.n_words,
-#     pad_token_id=scan_dataset.PAD_token,
-#     eos_token_id=scan_dataset.EOS_token,
-#     forced_eos_token_id=scan_dataset.EOS_token,
-#     d_model=16,
-#     )
-# model = MarianMTModel(config=config)
+        optimizer.step()
+        losses += loss.item()
 
-# # # Sample a random sentence from the training set
-# X, y = train_dataset[0]
+    return losses / n_iters
 
-# # Convert to torch tensor
-# X, y = train_dataset.convert_to_tensor(X, y)
+print("Training model")
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+for epoch in range(10):
+    loss = train_epoch(model, optimizer)
+    print(f"Epoch {epoch} loss: {loss}")
 
 
-# # pass input_ids to encoder and to decoder and pass BOS token to decoder to retrieve first logit
-# outputs = model(X, decoder_input_ids=y, return_dict=True)
+# def evaluate(model):
+#     model.eval()
+#     losses = 0
 
-# # get logits
-# lm_logits = outputs.logits
+#     val_iter = Multi30k(split='valid', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+#     val_dataloader = DataLoader(val_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
 
-# print(lm_logits)
+#     for src, tgt in val_dataloader:
+#         src = src.to(DEVICE)
+#         tgt = tgt.to(DEVICE)
 
+#         tgt_input = tgt[:-1, :]
+
+#         src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(src, tgt_input)
+
+#         logits = model(src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask)
+
+#         tgt_out = tgt[1:, :]
+#         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
+#         losses += loss.item()
+
+#     return losses / len(val_dataloader)
 

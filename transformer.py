@@ -52,7 +52,8 @@ class Seq2SeqTransformer(nn.Module):
                                        num_encoder_layers=num_encoder_layers,
                                        num_decoder_layers=num_decoder_layers,
                                        dim_feedforward=dim_feedforward,
-                                       dropout=dropout)
+                                       dropout=dropout,
+                                       batch_first=True)
         self.generator = nn.Linear(emb_size, tgt_vocab_size)
         self.src_tok_emb = TokenEmbedding(src_vocab_size, emb_size)
         self.tgt_tok_emb = TokenEmbedding(tgt_vocab_size, emb_size)
@@ -94,12 +95,12 @@ class Seq2SeqTransformer(nn.Module):
 
 
     def create_mask(self, src, tgt):
-        src_seq_len = src.shape[0]
-        tgt_seq_len = tgt.shape[0]
+        src_seq_len = src.shape[1]
+        tgt_seq_len = tgt.shape[1]
 
         tgt_mask = self.transformer.generate_square_subsequent_mask(tgt_seq_len)
         src_mask = torch.zeros((src_seq_len, src_seq_len)).type(torch.bool)
 
-        src_padding_mask = (src == self.pad_idx).transpose(0, 1)
-        tgt_padding_mask = (tgt == self.pad_idx).transpose(0, 1)
+        src_padding_mask = (src == self.pad_idx)
+        tgt_padding_mask = (tgt == self.pad_idx)
         return src_mask, tgt_mask, src_padding_mask, tgt_padding_mask

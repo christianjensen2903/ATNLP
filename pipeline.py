@@ -8,6 +8,9 @@ import helper
 import scan_dataset
 import wandb
 
+# TODO: Make encoder decoder into a model class so the training can 
+# accommodate transformer and lstm
+
 teacher_forcing_ratio = .5
 
 def train_iteration(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion,
