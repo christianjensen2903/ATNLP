@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from torch import nn
+import random
 
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
@@ -141,3 +142,77 @@ class DecoderRNN(nn.Module):
             output, hidden = self.decoder_cell(input, hidden)
 
         return output, hidden
+
+
+# Abstract class for seq2seq models
+class Seq2SeqModel(nn.Module):
+    def __init__(self, pad_index, sos_index, eos_index, **kwargs):
+        super(Seq2SeqModel, self).__init__()
+        self.pad_index = pad_index
+        self.sos_index = sos_index
+        self.eos_index = eos_index
+
+    def forward(self, input, target):
+        raise NotImplementedError
+
+    def predict(self, input, max_length=100):
+        raise NotImplementedError
+
+
+class RNNSeq2Seq(Seq2SeqModel):
+    def __init__(self, pad_index, sos_index, eos_index, encoder, decoder, teacher_forcing_ratio=0.5, device='cpu'):
+        super(RNNSeq2Seq, self).__init__(pad_index, sos_index, eos_index)
+        self.encoder = encoder
+        self.decoder = decoder
+        self.device = device
+        self.teacher_forcing_ratio = teacher_forcing_ratio
+
+    def forward(self, input, target):
+        batch_size = input.size(0)
+        max_len = target.size(1)
+        vocab_size = self.decoder.decoder_cell.output_size
+
+        # Initialize the output sequence with the SOS token
+        outputs = torch.zeros(batch_size, max_len, vocab_size).to(self.device)
+        outputs[:, 0] = self.sos_index
+
+        hidden, enc_outputs = self.encoder(input)
+        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long).to(self.device)
+
+        for t in range(1, max_len):
+            # Teacher forcing: Feed the target as the next input
+            output, hidden = self.decoder(decoder_input, hidden, enc_outputs)
+            outputs[:, t] = output
+            teacher_force = random.random() < self.teacher_forcing_ratio
+            top1 = output.max(1)[1]
+            decoder_input = (target[:, t] if teacher_force else top1).unsqueeze(1)
+
+        return outputs
+
+    def predict(self, input, max_length=100):
+        """Predict the output sequence given the input sequence using greedy search."""
+        batch_size = input.size(0)
+
+        # Initialize the output sequence with the SOS token
+        outputs = torch.full((batch_size, max_length), self.pad_index, dtype=torch.long).to(self.device)
+        outputs[:, 0] = self.sos_index
+
+        hidden, enc_outputs = self.encoder(input)
+        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long).to(self.device)
+
+        # Decode the sequence one timestep at a time
+        for t in range(1, max_length):
+            output, hidden = self.decoder(decoder_input, hidden, enc_outputs)
+
+            outputs[:, t] = output.max(1)[1]
+
+            # Find the indices of the EOS tokens in the output
+            eos_indices = torch.where(output.max(1)[1] == self.eos_index)
+
+            # If EOS is found set the rest of the sequence to PAD
+            if len(eos_indices[0]) > 0:
+                outputs[eos_indices[0], t+1:max_length] = self.pad_index
+                
+            decoder_input = output.max(1)[1].unsqueeze(1)
+
+        return outputs

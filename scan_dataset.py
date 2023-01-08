@@ -20,13 +20,18 @@ class ScanSplit(Enum):
 
 class Lang:
     def __init__(self):
-        self.word2index = {}
+        
         self.word2count = {}
         self.index2word = {
             SOS_token: "<SOS>",
             EOS_token: "<EOS>",
             UNK_token: '<UNK>',
-            PAD_token: '<PAD>'}
+            PAD_token: '<PAD>'
+        }
+
+        # Reverse mapping
+        self.word2index = dict((v, k) for k, v in self.index2word.items())
+
         self.n_words = len(self.index2word)  # Count tokens
 
         self.max_length = 0
@@ -59,7 +64,6 @@ class Lang:
     def tensor_from_sentence(self, sentence: str):
         """Convert sentence to torch tensor"""
         indexes = self.indexes_from_sentence(sentence)
-        indexes.append(EOS_token)
         return torch.tensor(indexes, dtype=torch.long)
 
 
@@ -70,6 +74,11 @@ class ScanDataset(Dataset):
         self.output_lang = output_lang
 
         self.X, self.y = self._get_data(split, split_variation, train)
+
+        # Add EOS and SOS tokens
+        self.X = [f'<SOS> {x} <EOS>' for x in self.X]
+        self.y = [f'<SOS> {y} <EOS>' for y in self.y]
+        
 
     def __len__(self):
         return len(self.y)

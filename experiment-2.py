@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-from torch.utils.data import DataLoader
 import scan_dataset
 import models
 import pipeline
@@ -34,7 +33,7 @@ test_dataset = scan_dataset.ScanDataset(
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
 n_iter = 100000
-n_runs = 5
+n_runs = 1
 
 overall_best = {
     'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
@@ -67,11 +66,14 @@ def run_overall_best():
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
                                     overall_best['ATTENTION']).to(device)
 
-        encoder, decoder = pipeline.train(train_dataset, encoder, decoder, n_iter, print_every=100, learning_rate=0.001,
+
+        model = models.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
+
+        model = pipeline.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
-        pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False))
+        # pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
+        # pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
+        results.append(pipeline.evaluate(test_dataset, model))
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))

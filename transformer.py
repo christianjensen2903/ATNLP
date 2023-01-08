@@ -41,11 +41,10 @@ class Seq2SeqTransformer(nn.Module):
                  num_decoder_layers: int,
                  emb_size: int,
                  nhead: int,
-                 src_vocab_size: int,
-                 tgt_vocab_size: int,
+                 input_vocab_size: int,
+                 target_vocab_size: int,
                  dim_feedforward: int = 512,
-                 dropout: float = 0.1,
-                 pad_idx: int = 1):
+                 dropout: float = 0.1):
         super(Seq2SeqTransformer, self).__init__()
         self.transformer = Transformer(d_model=emb_size,
                                        nhead=nhead,
@@ -54,53 +53,51 @@ class Seq2SeqTransformer(nn.Module):
                                        dim_feedforward=dim_feedforward,
                                        dropout=dropout,
                                        batch_first=True)
-        self.generator = nn.Linear(emb_size, tgt_vocab_size)
-        self.src_tok_emb = TokenEmbedding(src_vocab_size, emb_size)
-        self.tgt_tok_emb = TokenEmbedding(tgt_vocab_size, emb_size)
+        self.generator = nn.Linear(emb_size, target_vocab_size)
+        self.input_tok_emb = TokenEmbedding(input_vocab_size, emb_size)
+        self.target_tok_emb = TokenEmbedding(target_vocab_size, emb_size)
         self.positional_encoding = PositionalEncoding(
             emb_size, dropout=dropout)
 
-        self.pad_idx = pad_idx
-
     def forward(self,
-                src: Tensor,
-                tgt: Tensor):
+                input: Tensor,
+                target: Tensor):
 
-        # Get masks for src and tgt
-        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = self.create_mask(src, tgt)
+        # Get masks for input and target
+        input_mask, target_mask, input_padding_mask, target_padding_mask = self.create_mask(input, target)
         
         # Embed sequence
-        src = self.src_tok_emb(src)
-        tgt = self.tgt_tok_emb(tgt)
+        input = self.input_tok_emb(input)
+        target = self.target_tok_emb(target)
 
         # Add positional encoding
-        src = self.positional_encoding(src)
-        tgt = self.positional_encoding(tgt)
+        input = self.positional_encoding(input)
+        target = self.positional_encoding(target)
 
         # Pass through transformer
-        outs = self.transformer(src, tgt, src_mask, tgt_mask, None,
-                                src_padding_mask, tgt_padding_mask)
+        outs = self.transformer(input, target, input_mask, target_mask, None,
+                                input_padding_mask, target_padding_mask)
 
         # Generate output
         return self.generator(outs)
 
-    def encode(self, src: Tensor, src_mask: Tensor):
+    def encode(self, input: Tensor, input_mask: Tensor):
         return self.transformer.encoder(self.positional_encoding(
-                            self.src_tok_emb(src)), src_mask)
+                            self.input_tok_emb(input)), input_mask)
 
-    def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
+    def decode(self, target: Tensor, memory: Tensor, target_mask: Tensor):
         return self.transformer.decoder(self.positional_encoding(
-                          self.tgt_tok_emb(tgt)), memory,
-                          tgt_mask)
+                          self.target_tok_emb(target)), memory,
+                          target_mask)
 
 
-    def create_mask(self, src, tgt):
-        src_seq_len = src.shape[1]
-        tgt_seq_len = tgt.shape[1]
+    def create_mask(self, input, target):
+        input_seq_len = input.shape[1]
+        target_seq_len = target.shape[1]
 
-        tgt_mask = self.transformer.generate_square_subsequent_mask(tgt_seq_len)
-        src_mask = torch.zeros((src_seq_len, src_seq_len)).type(torch.bool)
+        target_mask = self.transformer.generate_square_subsequent_mask(target_seq_len)
+        input_mask = torch.zeros((input_seq_len, input_seq_len)).type(torch.bool)
 
-        src_padding_mask = (src == self.pad_idx)
-        tgt_padding_mask = (tgt == self.pad_idx)
-        return src_mask, tgt_mask, src_padding_mask, tgt_padding_mask
+        input_padding_mask = (input == self.pad_idx)
+        target_padding_mask = (target == self.pad_idx)
+        return input_mask, target_mask, input_padding_mask, target_padding_mask
