@@ -103,11 +103,15 @@ class AttnDecoderCell(nn.Module):
 
     def forward(self, input, hidden_state, enc_outputs):
         
-        enc_outputs = enc_outputs.unsqueeze(0).permute(1, 0, 2)
+        # TODO: Doesn't handle batch size > 1
+        # Reshaping to handle sequence length as batch to use bmm
+        enc_outputs = enc_outputs.permute(1, 0, 2)
 
         embedded = self.embedding(input)
         embedded = self.dropout(embedded)
 
+        # TODO: Doesn't handle LSTM
+        # Only using last layer hidden state for attention
         query = torch.unsqueeze(hidden_state[-1], dim=1)
         context = self.attention(
             query, enc_outputs, enc_outputs)
@@ -117,8 +121,12 @@ class AttnDecoderCell(nn.Module):
         x = torch.cat((context, embedded), dim=-1)
 
         outputs, hidden_state = self.rnn(x, hidden_state)
-        x = torch.cat((context, hidden_state), dim=-1)
+
+        # Concat context and and hidden state to get output
+        query = torch.unsqueeze(hidden_state[-1], dim=1)
+        x = torch.cat((context, query), dim=-1)
         outputs = F.log_softmax(self.dense(x[0]), dim=1)
+
         return outputs, hidden_state
 
 
@@ -127,6 +135,7 @@ class DecoderRNN(nn.Module):
                  device='cpu', max_length=100):
         super(DecoderRNN, self).__init__()
 
+        self.output_size = output_size
 
         self.attention = attention
         if attention:
@@ -170,7 +179,7 @@ class RNNSeq2Seq(Seq2SeqModel):
     def forward(self, input, target):
         batch_size = input.size(0)
         max_len = target.size(1)
-        vocab_size = self.decoder.decoder_cell.output_size
+        vocab_size = self.decoder.output_size
 
         # Initialize the output sequence with the SOS token
         outputs = torch.zeros(batch_size, max_len, vocab_size).to(self.device)
