@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-from torch import nn
 import random
+from Seq2SeqModel import Seq2SeqModel
 
 class EncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
@@ -152,20 +152,6 @@ class DecoderRNN(nn.Module):
 
         return output, hidden
 
-
-# Abstract class for seq2seq models
-class Seq2SeqModel(nn.Module):
-    def __init__(self, pad_index, sos_index, eos_index, **kwargs):
-        super(Seq2SeqModel, self).__init__()
-        self.pad_index = pad_index
-        self.sos_index = sos_index
-        self.eos_index = eos_index
-
-    def forward(self, input, target):
-        raise NotImplementedError
-
-    def predict(self, input, max_length=100):
-        raise NotImplementedError
 
 
 class RNNSeq2Seq(Seq2SeqModel):
