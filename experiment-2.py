@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+import config
 import scan_dataset
 import models
 import pipeline
@@ -10,38 +10,11 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pickle
 from tqdm import tqdm
+import Seq2SeqTrainer
+import Seq2SeqModel
+import Seq2SeqDataset
 
-log_wandb = False
 
-input_lang = scan_dataset.Lang()
-output_lang = scan_dataset.Lang()
-
-train_dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.LENGTH_SPLIT,
-    input_lang=input_lang,
-    output_lang=output_lang,
-    train=True
-)
-
-test_dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.LENGTH_SPLIT,
-    input_lang=input_lang,
-    output_lang=output_lang,
-    train=False
-)
-
-MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
-
-n_iter = 100000
-n_runs = 1
-
-overall_best = {
-    'HIDDEN_SIZE': 200,  # 25, 50, 100, 200, or 400
-    'RNN_TYPE': 'LSTM',  # RNN, GRU or LSTM
-    'N_LAYERS': 2,  # 1 or 2
-    'DROPOUT': 0.5,  # 0, 0.1 or 0.5
-    'ATTENTION': False,  # True or False
-}
 
 experiment_best = {
     'HIDDEN_SIZE': 50,  # 25, 50, 100, 200, or 400
@@ -50,61 +23,6 @@ experiment_best = {
     'DROPOUT': 0.5,  # 0, 0.1 or 0.5
     'ATTENTION': True,  # True or False
 }
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(f'Using device: {device}')
-
-
-def run_overall_best():
-    results = []
-    # Train 5 times and average the results
-    for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
-                                    n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
-            device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
-                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
-                                    overall_best['ATTENTION']).to(device)
-
-
-        model = models.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
-
-        model = pipeline.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=log_wandb)
-        # pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        # pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, model))
-
-    avg_accuracy = sum(results) / len(results)
-    print('Average accuracy for overall best: {}'.format(avg_accuracy))
-    if log_wandb:
-        wandb.run.summary["Average accuracy for overall best"] = avg_accuracy
-
-
-def run_experiment_best():
-    results = []
-    # Train 5 times and average the results
-    for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
-                                    n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
-            device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
-                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
-                                    overall_best['ATTENTION']).to(device)
-
-        model = models.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
-
-        model = pipeline.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=log_wandb)
-        # pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_2_run_{run}.sav', 'wb'))
-        # pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_2_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, model))
-
-    avg_accuracy = sum(results) / len(results)
-    print('Average accuracy for experiment best: {}'.format(avg_accuracy))
-    if log_wandb:
-        wandb.run.summary["Average accuracy for experiment best"] = avg_accuracy
-
 
 def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False, experiment_best=False):
     results = defaultdict(list)
@@ -266,15 +184,43 @@ def oracle_test(experiment_best=False):
     print(f'Oracle Accuracy for {"experiment" if experiment_best else "overall"} best: {np.mean(results)}')
 
 
+def train_and_eval(
+    model: Seq2SeqModel.Seq2SeqModel,
+    train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments):
+
+    
+
+
+        model = model()
+        Seq2SeqModel.Seq2SeqModel()
+
+        train_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = True)
+        test_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = False)
+
+        # Train and evaluate model
+        trainer = Seq2SeqTrainer.Seq2SeqTrainer(
+            model=model,
+            args=train_args,
+            train_dataset=train_dataset,
+            test_dataset=test_dataset,
+        )
+        
+        model = trainer.train(evaluate_after=True)
+
+        # Save model
+        model.save(f'saved_models/experiment_2/run_{run}.sav', wandb_run=wandb_run, wandb_name=f'run_{run}')
+    
+
+
 
 def main():
     # WANDB_API_KEY = os.environ.get('WANDB_API_KEY')
-    if log_wandb:
-        wandb.login()
-        wandb.init(project="experiment-2", entity="atnlp")
-
+    
+    train_and_eval(
+        
+    )
     # run_overall_best()
-    run_experiment_best()
+    # run_experiment_best()
     # test_sequence_length()
     # test_command_length()
 

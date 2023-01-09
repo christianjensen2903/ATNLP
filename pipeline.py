@@ -8,10 +8,6 @@ import scan_dataset
 import wandb
 import models
 
-teacher_forcing_ratio = .5
-
-# Fix training for attention
-
 def train_iteration(input_tensor, target_tensor, model, optimizer, criterion,
                     device='cpu'):
     """A single training iteration."""

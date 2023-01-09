@@ -5,6 +5,7 @@ import Seq2SeqDataset
 import wandb
 import numpy as np
 from tqdm import tqdm
+from typing import List, Dict
 
 
 @dataclass
@@ -16,6 +17,45 @@ class Seq2SeqTrainingArguments():
     clip_grad: float = 1.0
     teacher_forcing_ratio: float = 0.5
     log_wandb: bool = False
+    output_dir: str = None
+    save_steps: int = 1000
+
+
+@dataclass
+class TrainerState:
+    """
+    Object containing the state of the trainer.
+    """
+    step: int = 0
+    log_history: List[Dict[str, float]] = None
+
+
+class TrainerCallback():
+
+    def on_train_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+        """
+        Called at the beginning of the training.
+        """
+        pass
+
+    def on_train_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+        """
+        Called at the end of the training.
+        """
+        pass
+
+    def on_step_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+        """
+        Called at the beginning of each training step.
+        """
+        pass
+
+    def on_step_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+        """
+        Called at the end of each training step.
+        """
+        pass
+
 
 
 class Seq2SeqTrainer():
@@ -28,6 +68,7 @@ class Seq2SeqTrainer():
             criterion: torch.nn.Module = None,
             train_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
             test_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
+            callbacks: List[TrainerCallback] = []
             ):
 
 
@@ -41,6 +82,7 @@ class Seq2SeqTrainer():
             assert(train_dataset is not None, "Train dataset must be provided if criterion is not provided")
             criterion = torch.nn.NLLLoss(ignore_index=train_dataset.output_lang.pad_index)
 
+        self.callbacks = callbacks
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
@@ -49,14 +91,27 @@ class Seq2SeqTrainer():
         self.test_dataset = test_dataset
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        self.state = TrainerState()
 
-    def train(self, verbose=False, log_every=1000):
+
+    def train(self, verbose: bool = True, log_every: int = 1000, print_every: int = 1000, evaluate_after: bool = True):
         """Train the model for n_iter iterations."""
         self.model.train()
 
         print_loss_total = 0
+        log_loss_total = 0
+
+        # Training begin callback
+        for callback in self.callbacks:
+            callback.on_train_begin(state=self.state)
 
         for iteration in tqdm(range(1, self.args.n_iter + 1), total=self.args.n_iter, leave=False, desc="Training"):
+            
+            self.state.step = iteration
+            # Step begin callback
+            for callback in self.callbacks:
+                callback.on_step_begin(state=self.state)
+            
             random_batch = np.random.choice(len(self.train_dataset), self.args.batch_size)
             X, y = self.train_dataset[random_batch]
 
@@ -64,14 +119,41 @@ class Seq2SeqTrainer():
 
             loss = self.train_iteration(input_tensor, target_tensor)
             print_loss_total += loss
+            log_loss_total += loss
 
-            if iteration % log_every == 0 and verbose:
+            if iteration % print_every == 0 and verbose:
                 print_loss_avg = print_loss_total / log_every
                 print_loss_total = 0
                 print('%d (%d%%): %.4f' % (iteration, iteration / self.args.n_iter * 100, print_loss_avg))
+            
+            if iteration % log_every == 0:
+                log_loss_avg = log_loss_total / log_every
+                log_loss_total = 0
+                if self.args.log_wandb:
+                    wandb.log({"loss": log_loss_avg})
 
+                self.state.log_history({"loss": log_loss_avg})
 
-    def train_iteration(self, input_tensor, target_tensor):
+            if self.args.save_steps is not None and iteration % self.args.save_steps == 0:
+                self.model.save(self.args.output_dir)
+
+            # Step end callback
+            for callback in self.callbacks:
+                callback.on_step_end(state=self.state)
+
+        # Save after training
+        self.model.save(self.args.output_dir)
+
+        # Training end callback
+        for callback in self.callbacks:
+            callback.on_train_end(state=self.state)
+
+        if evaluate_after:
+            self.evaluate(verbose=verbose)
+
+        
+
+    def train_iteration(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor):
         """Train the model for a single iteration."""
         self.model.train()
         self.optimizer.zero_grad()
@@ -89,7 +171,7 @@ class Seq2SeqTrainer():
         return loss.item()
 
     
-    def evaluate(self, verbose=False):
+    def evaluate(self, verbose: bool = False):
         """Evaluate the model on the test dataset."""
         self.model.eval()
 

@@ -1,14 +1,21 @@
 import torch.nn as nn
 import wandb
 import torch
+from dataclasses import dataclass
+
+@dataclass
+class Seq2SeqModelConfig():
+    pad_index: int
+    sos_index: int
+    eos_index: int
 
 # Abstract class for seq2seq models
 class Seq2SeqModel(nn.Module):
-    def __init__(self, pad_index, sos_index, eos_index, **kwargs):
+    def __init__(self, config: Seq2SeqModelConfig):
         super(Seq2SeqModel, self).__init__()
-        self.pad_index = pad_index
-        self.sos_index = sos_index
-        self.eos_index = eos_index
+        self.pad_index = config.pad_index
+        self.sos_index = config.sos_index
+        self.eos_index = config.eos_index
 
     def forward(self, input, target):
         raise NotImplementedError

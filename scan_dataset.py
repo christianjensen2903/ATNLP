@@ -9,8 +9,8 @@ class ScanSplit(Enum):
 
 
 class ScanDataset(Seq2SeqDataset):
-    def __init__(self, split: ScanSplit, input_lang: Lang, output_lang: Lang, train: bool = True, split_variation=None):
-        super().__init__(input_lang, output_lang, train)
+    def __init__(self, split: ScanSplit, train: bool = True, split_variation=None):
+        super().__init__(train)
 
         self.X, self.y = self._get_data(split, split_variation, train)
 
@@ -98,26 +98,3 @@ class ScanDataset(Seq2SeqDataset):
         out_txt = [sen[1].strip() for sen in txt_data]
 
         return in_txt, out_txt
-
-def get_data(split: ScanSplit, split_variation: str = None):
-    """Get the SCAN dataset for the selected split"""
-    input_lang = Lang()
-    output_lang = Lang()
-
-    train_dataset = ScanDataset(
-        split=split,
-        split_variation=split_variation,
-        input_lang=input_lang,
-        output_lang=output_lang,
-        train=True
-    )
-
-    test_dataset = ScanDataset(
-        split=split,
-        split_variation=split_variation,
-        input_lang=input_lang,
-        output_lang=output_lang,
-        train=False
-    )
-
-    return train_dataset, test_dataset
