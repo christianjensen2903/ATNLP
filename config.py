@@ -21,10 +21,13 @@ overall_best = RNNConfig(
     teacher_forcing_ratio=0.5,
 )
 
-paper_config = Seq2SeqTrainingArguments(
+paper_train_args = Seq2SeqTrainingArguments(
     batch_size=1,
     n_iter=100000,
     clip_grad=5.0,
+    log_wandb=False,
+    output_dir="checkpoints",
+
 )
 
 

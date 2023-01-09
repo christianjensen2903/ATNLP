@@ -6,8 +6,7 @@ class CustomTrainerCallback(Seq2SeqTrainer.TrainerCallback):
     Custom trainer callback to log experiments to wandb
     """
 
-    def __init__(self, wandb_run: wandb.Run, run_index: int, run_type: str):
-        self.wandb_run = wandb_run
+    def __init__(self, run_index: int, run_type: str):
         self.run_index = run_index
         self.run_type = run_type
 
@@ -15,20 +14,21 @@ class CustomTrainerCallback(Seq2SeqTrainer.TrainerCallback):
         return f"{self.run_type}-{self.run_index}"
 
 
-    def on_train_end(self, state: Seq2SeqTrainer.TrainerState):
-        """
-        Save model after training
-        """
-        self.save(f'saved_models/experiment_2/run_{run_index}.sav', wandb_run=wandb_run, wandb_name=f'run_{run_index}')
-
-
-    def on_step_end(self, state: Seq2SeqTrainer.TrainerState):
+    def on_step_end(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
         """
         Called at the end of each training step.
         """
+        super().on_step_end(train_args, state, **kwargs)
         # Add run type and index in front of each log
         log = state.log_history[-1]
         log = {f"{self._run_to_string()}/{key}": value for key, value in log.items()}
+        if train_args.log_wandb:
+            wandb.log(log)
 
-        if self.wandb_run is not None:
-            self.wandb_run.log(log)
+    def on_save(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
+        super().on_save(train_args, state, **kwargs)
+        if train_args.log_wandb:
+            artifact = wandb.Artifact(f'{self._run_to_string()}-checkpoint.sav', type='model')
+            artifact.add_file(train_args.output_dir + "-checkpoint.sav")
+            wandb.log_artifact(artifact)
+

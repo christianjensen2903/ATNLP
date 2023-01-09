@@ -12,13 +12,12 @@ from typing import List, Dict
 class Seq2SeqTrainingArguments():
     batch_size: int = 32
     n_iter: int = 1000
-    n_runs: int = 1
     learning_rate: float = 0.001
     clip_grad: float = 1.0
-    teacher_forcing_ratio: float = 0.5
     log_wandb: bool = False
     output_dir: str = None
-    save_steps: int = 1000
+    save_steps: int = None
+    log_wandb: bool = False
 
 
 @dataclass
@@ -32,30 +31,35 @@ class TrainerState:
 
 class TrainerCallback():
 
-    def on_train_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+    def on_train_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
         """
         Called at the beginning of the training.
         """
         pass
 
-    def on_train_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+    def on_train_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
         """
         Called at the end of the training.
         """
         pass
 
-    def on_step_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+    def on_step_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
         """
         Called at the beginning of each training step.
         """
         pass
 
-    def on_step_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState):
+    def on_step_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
         """
         Called at the end of each training step.
         """
         pass
 
+    def on_save(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+        """
+        Called when the model is saved.
+        """
+        pass
 
 
 class Seq2SeqTrainer():
@@ -103,14 +107,14 @@ class Seq2SeqTrainer():
 
         # Training begin callback
         for callback in self.callbacks:
-            callback.on_train_begin(state=self.state)
+            callback.on_train_begin(state=self.state, train_args=self.args)
 
         for iteration in tqdm(range(1, self.args.n_iter + 1), total=self.args.n_iter, leave=False, desc="Training"):
             
             self.state.step = iteration
             # Step begin callback
             for callback in self.callbacks:
-                callback.on_step_begin(state=self.state)
+                callback.on_step_begin(state=self.state, train_args=self.args)
             
             random_batch = np.random.choice(len(self.train_dataset), self.args.batch_size)
             X, y = self.train_dataset[random_batch]
@@ -139,14 +143,16 @@ class Seq2SeqTrainer():
 
             # Step end callback
             for callback in self.callbacks:
-                callback.on_step_end(state=self.state)
+                callback.on_step_end(state=self.state, train_args=self.args)
 
         # Save after training
         self.model.save(self.args.output_dir)
+        for callback in self.callbacks:
+            callback.on_save(state=self.state, train_args=self.args)
 
         # Training end callback
         for callback in self.callbacks:
-            callback.on_train_end(state=self.state)
+            callback.on_train_end(state=self.state, train_args=self.args, train_args=self.args)
 
         if evaluate_after:
             self.evaluate(verbose=verbose)
@@ -193,8 +199,8 @@ class Seq2SeqTrainer():
         accuracy = np.mean(n_correct)
 
         if verbose:
-            print("Accuracy", accuracy)
+            print("Evaluation Accuracy", accuracy)
 
-        return accuracy
+        return {"eval_accuracy": accuracy}
 
                 
