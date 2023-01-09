@@ -3,15 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import random
-from Seq2SeqModel import Seq2SeqModel
+from Seq2SeqModel import Seq2SeqModel, Seq2SeqModelConfig
+from dataclasses import dataclass
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu'):
+    def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
         self.RNN_type = rnn_type
-        self.device = device
 
         self.embedding = nn.Embedding(input_size, self.hidden_size)
 
@@ -35,7 +35,7 @@ class EncoderRNN(nn.Module):
 
 
 class DecoderCell(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, device='cpu', max_length=100):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, max_length=100):
         super(DecoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -90,7 +90,7 @@ class AdditiveAttention(nn.Module):
 
 class AttnDecoderCell(nn.Module):
     def __init__(self, ouput_size, hidden_size, num_layers, rnn_type,
-                 dropout_p=0, device='cpu', max_length=100):
+                 dropout_p=0, max_length=100):
         super().__init__()
         self.attention = AdditiveAttention(num_hiddens=hidden_size, key_size=hidden_size, query_size=hidden_size)
         self.embedding = nn.Embedding(ouput_size, hidden_size)
@@ -131,17 +131,16 @@ class AttnDecoderCell(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False,
-                 device='cpu', max_length=100):
+    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False, max_length=100):
         super(DecoderRNN, self).__init__()
 
         self.output_size = output_size
 
         self.attention = attention
         if attention:
-            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device, max_length)
+            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, max_length)
         else:
-            self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, device)
+            self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p)
 
     def forward(self, input, hidden, enc_outputs=None):
         assert enc_outputs is not None if self.attention else True  # If attention is used, all encoder hidden states must be provided
@@ -154,13 +153,33 @@ class DecoderRNN(nn.Module):
 
 
 
+@dataclass
+class RNNSeq2SeqConfig(Seq2SeqModelConfig):
+    teacher_forcing_ratio: float = 0.5
+    hidden_size: int = 256
+    n_layers: int = 1
+    dropout_p: float = 0.1
+    rnn_type: str = 'RNN'
+    attention: bool = False
+    input_vocab_size: int = 0
+    output_vocab_size: int = 0
+
+
+
 class RNNSeq2Seq(Seq2SeqModel):
-    def __init__(self, pad_index, sos_index, eos_index, encoder, decoder, teacher_forcing_ratio=0.5, device='cpu'):
-        super(RNNSeq2Seq, self).__init__(pad_index, sos_index, eos_index)
-        self.encoder = encoder
-        self.decoder = decoder
-        self.device = device
-        self.teacher_forcing_ratio = teacher_forcing_ratio
+    def __init__(self, config: RNNSeq2SeqConfig = None):
+        super(RNNSeq2Seq, self).__init__()
+        
+    def from_config(self, config: RNNSeq2SeqConfig):
+        super().from_config(config)
+        self.hidden_size = config.hidden_size
+        self.n_layers = config.n_layers
+        self.dropout_p = config.dropout_p
+        self.rnn_type = config.rnn_type
+        self.attention = config.attention
+        self.teacher_forcing_ratio = config.teacher_forcing_ratio
+        self.encoder = EncoderRNN(self.input_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p)
+        self.decoder = DecoderRNN(self.output_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p, self.attention)
 
     def forward(self, input, target):
         batch_size = input.size(0)
@@ -168,11 +187,11 @@ class RNNSeq2Seq(Seq2SeqModel):
         vocab_size = self.decoder.output_size
 
         # Initialize the output sequence with the SOS token
-        outputs = torch.zeros(batch_size, max_len, vocab_size).to(self.device)
+        outputs = torch.zeros(batch_size, max_len, vocab_size)
         outputs[:, 0] = self.sos_index
 
         hidden, enc_outputs = self.encoder(input)
-        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long).to(self.device)
+        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long)
 
         for t in range(1, max_len):
             # Teacher forcing: Feed the target as the next input
@@ -189,11 +208,11 @@ class RNNSeq2Seq(Seq2SeqModel):
         batch_size = input.size(0)
 
         # Initialize the output sequence with the SOS token
-        outputs = torch.full((batch_size, max_length), self.pad_index, dtype=torch.long).to(self.device)
+        outputs = torch.full((batch_size, max_length), self.pad_index, dtype=torch.long)
         outputs[:, 0] = self.sos_index
 
         hidden, enc_outputs = self.encoder(input)
-        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long).to(self.device)
+        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long)
 
         # Decode the sequence one timestep at a time
         for t in range(1, max_length):

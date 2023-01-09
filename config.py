@@ -1,21 +1,13 @@
 from dataclasses import asdict, dataclass, field, fields
 from Seq2SeqTrainer import Seq2SeqTrainer, Seq2SeqTrainingArguments
+from RNNSeq2Seq import RNNSeq2SeqConfig
 
 
-@dataclass
-class RNNConfig():
-    hidden_size: int
-    n_layers: int
-    dropout: float
-    attention: bool = False
-    rnn_type: str = "RNN"
-    teacher_forcing_ratio: float = 0.5
 
-
-overall_best = RNNConfig(
+overall_best_config = RNNSeq2SeqConfig(
     hidden_size=200,
     n_layers=2,
-    dropout=0.2,
+    dropout_p=0.2,
     attention=False,
     rnn_type="LSTM",
     teacher_forcing_ratio=0.5,

@@ -152,7 +152,7 @@ class Seq2SeqTrainer():
 
         # Training end callback
         for callback in self.callbacks:
-            callback.on_train_end(state=self.state, train_args=self.args, train_args=self.args)
+            callback.on_train_end(state=self.state, train_args=self.args)
 
         if evaluate_after:
             self.evaluate(verbose=verbose)
@@ -167,7 +167,6 @@ class Seq2SeqTrainer():
         loss = self.model(
             input_tensor.to(self.device),
             target_tensor.to(self.device),
-            self.criterion
             )
         loss.backward()
 

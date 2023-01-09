@@ -6,7 +6,7 @@ from tqdm import tqdm
 import helper
 import scan_dataset
 import wandb
-import models
+import RNNSeq2Seq
 
 def train_iteration(input_tensor, target_tensor, model, optimizer, criterion,
                     device='cpu'):
@@ -68,7 +68,7 @@ def train(dataset, model, n_iters, device='cpu', print_every=1000, plot_every=10
     return model
 
 
-def evaluate(dataset, model: models.Seq2SeqModel, verbose=False):
+def evaluate(dataset, model: RNNSeq2Seq.Seq2SeqModel, verbose=False):
     """Evaluate the model on the dataset"""
     model.eval()
 

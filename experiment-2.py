@@ -1,7 +1,7 @@
 from collections import defaultdict
 import config
 import scan_dataset
-import models
+import RNNSeq2Seq
 import pipeline
 import torch
 import wandb
@@ -199,9 +199,14 @@ def experiment_loop(
         # Load dataset
         train_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = True)
         test_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = False)
-
+        
         # Reset model
-        model.from_config(model_config)
+        model_config.input_vocab_size = train_dataset.input_lang.n_words
+        model_config.output_vocab_size = train_dataset.output_lang.n_words
+        model_config.pad_index = train_dataset.input_lang.pad_index
+        model_config.sos_index = train_dataset.input_lang.sos_index
+        model_config.eos_index = train_dataset.input_lang.eos_index
+        model.from_config(config=model_config)
         
         # Train and evaluate model
         trainer = Seq2SeqTrainer.Seq2SeqTrainer(
@@ -226,15 +231,14 @@ def main():
 
     if train_args.log_wandb:
         wandb.login()
-        wandb.init(project="experiment-2", entity="atnlp")
-
-    if train_args.log_wandb:
-        wandb_run = wandb.init(project="experiment 2", entity="atnlp", config=train_args)
-    else:
-        wandb_run = None
+        wandb.init(project="experiment-2", entity="atnlp", config=train_args)
     
+
     experiment_loop(
-        
+        model=RNNSeq2Seq.RNNSeq2Seq(),
+        model_config=config.overall_best_config,
+        train_args=train_args,
+        run_type='overall_best'
     )
     # run_overall_best()
     # run_experiment_best()

@@ -5,21 +5,26 @@ from dataclasses import dataclass
 
 @dataclass
 class Seq2SeqModelConfig():
-    pad_index: int
-    sos_index: int
-    eos_index: int
+    pad_index: int = None
+    sos_index: int = None
+    eos_index: int = None
+    input_vocab_size: int = None
+    output_vocab_size: int = None
 
 # Abstract class for seq2seq models
 class Seq2SeqModel(nn.Module):
-    def __init__(self, config: Seq2SeqModelConfig):
+    def __init__(self, config: Seq2SeqModelConfig = None):
         super(Seq2SeqModel, self).__init__()
-        self.from_config(config)
+        if config:
+            self.from_config(config)
 
     def from_config(self, config: Seq2SeqModelConfig):
         self.pad_index = config.pad_index
         self.sos_index = config.sos_index
         self.eos_index = config.eos_index
-
+        self.input_vocab_size = config.input_vocab_size
+        self.output_vocab_size = config.output_vocab_size
+        
         # Initialize weights
         for layers in self.children():
             for layer in layers:
