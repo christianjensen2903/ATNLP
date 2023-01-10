@@ -57,9 +57,9 @@ class Lang:
         return torch.tensor(indexes, dtype=torch.long)
 
 class Seq2SeqDataset(Dataset):
-    def __init__(self, train: bool = True):
-        self.input_lang = Lang()
-        self.output_lang = Lang()
+    def __init__(self, input_lang: Lang, output_lang: Lang, train: bool = True, **kwargs):
+        self.input_lang = input_lang
+        self.output_lang = output_lang
         self.train = train
 
         self.X = []

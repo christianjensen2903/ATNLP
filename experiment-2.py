@@ -197,9 +197,10 @@ def experiment_loop(
 
     for i in range(1):
         # Load dataset
-        train_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = True)
-        test_dataset = scan_dataset.ScanDataset(split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = False)
-        
+        input_lang, output_lang = Seq2SeqDataset.Lang(), Seq2SeqDataset.Lang()
+        train_dataset = scan_dataset.ScanDataset(input_lang = input_lang, output_lang = output_lang, split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = True)
+        test_dataset = scan_dataset.ScanDataset(input_lang = input_lang, output_lang = output_lang, split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = False)
+
         # Reset model
         model_config.input_vocab_size = train_dataset.input_lang.n_words
         model_config.output_vocab_size = train_dataset.output_lang.n_words

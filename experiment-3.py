@@ -3,7 +3,7 @@ from collections import defaultdict
 from torch.utils.data import DataLoader
 
 import scan_dataset
-import models
+import RNNSeq2Seq
 import pipeline
 import torch
 import wandb
@@ -69,10 +69,10 @@ def run_overall_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], MAX_LENGTH, device,
+        encoder = RNNSeq2Seq.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT']).to(
             device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
+        decoder = RNNSeq2Seq.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
                                     overall_best['ATTENTION']).to(device)
 
@@ -93,10 +93,10 @@ def run_experiment_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], MAX_LENGTH, device,
+        encoder = RNNSeq2Seq.EncoderRNN(train_dataset.input_lang.n_words, experiment_best['HIDDEN_SIZE'], MAX_LENGTH, device,
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT']).to(device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'],
+        decoder = RNNSeq2Seq.DecoderRNN(train_dataset.output_lang.n_words, experiment_best['HIDDEN_SIZE'],
                                     experiment_best['N_LAYERS'], experiment_best['RNN_TYPE'],
                                     experiment_best['DROPOUT'],
                                     experiment_best['ATTENTION']).to(device)

@@ -9,11 +9,10 @@ class ScanSplit(Enum):
 
 
 class ScanDataset(Seq2SeqDataset):
-    def __init__(self, split: ScanSplit, train: bool = True, split_variation=None):
-        super().__init__(train)
+    def __init__(self, input_lang: Lang, output_lang: Lang, split: ScanSplit, train: bool = True, split_variation=None):
+        super().__init__(input_lang, output_lang, train)
 
         self.X, self.y = self._get_data(split, split_variation, train)
-
         # Add EOS and SOS tokens
         self.X = [f'<SOS> {x} <EOS>' for x in self.X]
         self.y = [f'<SOS> {y} <EOS>' for y in self.y]

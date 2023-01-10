@@ -1,6 +1,6 @@
 import Seq2SeqModel
 import torch
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import Seq2SeqDataset
 import wandb
 import numpy as np
@@ -11,13 +11,15 @@ from typing import List, Dict
 @dataclass
 class Seq2SeqTrainingArguments():
     batch_size: int = 32
-    n_iter: int = 1000
+    n_iter: int = 10000
     learning_rate: float = 0.001
     clip_grad: float = 1.0
     log_wandb: bool = False
     output_dir: str = None
     save_steps: int = None
     log_wandb: bool = False
+    log_every: int = 10000
+    print_every: int = 10000
 
 
 @dataclass
@@ -26,7 +28,7 @@ class TrainerState:
     Object containing the state of the trainer.
     """
     step: int = 0
-    log_history: List[Dict[str, float]] = None
+    log_history: List[Dict[str, float]] = field(default_factory=list)
 
 
 class TrainerCallback():
@@ -98,7 +100,7 @@ class Seq2SeqTrainer():
         self.state = TrainerState()
 
 
-    def train(self, verbose: bool = True, log_every: int = 1000, print_every: int = 1000, evaluate_after: bool = True):
+    def train(self, verbose: bool = True, evaluate_after: bool = True):
         """Train the model for n_iter iterations."""
         self.model.train()
 
@@ -109,7 +111,7 @@ class Seq2SeqTrainer():
         for callback in self.callbacks:
             callback.on_train_begin(state=self.state, train_args=self.args)
 
-        for iteration in tqdm(range(1, self.args.n_iter + 1), total=self.args.n_iter, leave=False, desc="Training"):
+        for iteration in tqdm(range(0, self.args.n_iter), total=self.args.n_iter, leave=False, desc="Training"):
             
             self.state.step = iteration
             # Step begin callback
@@ -125,18 +127,18 @@ class Seq2SeqTrainer():
             print_loss_total += loss
             log_loss_total += loss
 
-            if iteration % print_every == 0 and verbose:
-                print_loss_avg = print_loss_total / log_every
+            if iteration % self.args.print_every == 0 and verbose:
+                print_loss_avg = print_loss_total / self.args.log_every
                 print_loss_total = 0
                 print('%d (%d%%): %.4f' % (iteration, iteration / self.args.n_iter * 100, print_loss_avg))
             
-            if iteration % log_every == 0:
-                log_loss_avg = log_loss_total / log_every
+            if iteration % self.args.log_every == 0:
+                log_loss_avg = log_loss_total / self.args.log_every
                 log_loss_total = 0
                 if self.args.log_wandb:
                     wandb.log({"loss": log_loss_avg})
 
-                self.state.log_history({"loss": log_loss_avg})
+                self.state.log_history.append({"loss": log_loss_avg})
 
             if self.args.save_steps is not None and iteration % self.args.save_steps == 0:
                 self.model.save(self.args.output_dir)
@@ -164,15 +166,16 @@ class Seq2SeqTrainer():
         self.model.train()
         self.optimizer.zero_grad()
 
-        loss = self.model(
+
+        outputs = self.model(
             input_tensor.to(self.device),
             target_tensor.to(self.device),
             )
-        loss.backward()
+        
+        loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
 
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.clip_grad)
         self.optimizer.step()
-
         return loss.item()
 
     
@@ -181,14 +184,20 @@ class Seq2SeqTrainer():
         self.model.eval()
 
         n_correct = []  # number of correct predictions
-
+        iter = 0
         with torch.no_grad():
-            for input_tensor, target_tensor in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating"):
-                input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input_tensor, target_tensor)
+            for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating"):
+                input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input, target)
 
                 max_length = target_tensor.size(1)
 
                 pred = self.model.predict(input_tensor, max_length=max_length)
+
+                if iter < 10:
+                    print(f'Input: {input}')
+                    print(f'Prediction: {pred}')
+                    print(f'Target: {target}')
+                    iter += 1
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()

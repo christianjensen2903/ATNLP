@@ -2,6 +2,8 @@ import torch.nn as nn
 import wandb
 import torch
 from dataclasses import dataclass
+import pickle
+import os
 
 @dataclass
 class Seq2SeqModelConfig():
@@ -43,7 +45,11 @@ class Seq2SeqModel(nn.Module):
         raise NotImplementedError
 
     def save(self, path: str, log_wandb: bool = False, wandb_name: str = None):
+        
+        os.makedirs(path, exist_ok=True)
+        path += '/models.sav'
         torch.save(self.state_dict(), path)
+        # pickle.dump(self, open(path, 'wb'))
         if log_wandb:
             wandb_name = wandb_name if wandb_name else 'model-checkpoint.sav'
             artifact = wandb.Artifact(wandb_name, type='model')
