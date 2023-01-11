@@ -81,8 +81,8 @@ def run_overall_best():
         model = models_new.RNNSeq2Seq().from_config(config)
 
 
-        model = pipeline_new.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
-                                          device=device, log_wandb=log_wandb)
+        model = pipeline_new.train(train_dataset, model, n_iter, print_every=1000, learning_rate=0.001,
+                                          device=device, log_wandb=log_wandb, verbose=True)
         # pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
         # pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
         results.append(pipeline_new.evaluate(test_dataset, model))
