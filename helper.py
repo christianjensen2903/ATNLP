@@ -6,7 +6,7 @@ import numpy as np
 import wandb
 from typing import List, Dict, Tuple, Union, Optional
 
-def plot_bar_chart(results: Dict[int, List[float]], splits: List[int], x_label: str, plot_title: str,
+def plot_bar_chart(results: Dict[int, List[float]], x_label: str, y_label: str, plot_title: str,
                    log_wandb: bool = False):
     # Average results
     mean_results = {}
@@ -20,13 +20,15 @@ def plot_bar_chart(results: Dict[int, List[float]], splits: List[int], x_label: 
     
 
     # Plot bar chart
-    plt.bar(splits, list(mean_results.values()), align='center', yerr=list(sem_results.values()),
+    plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(sem_results.values(), capsize=5),
             capsize=5)
     plt.xlabel(x_label)
+    plt.ylabel(y_label)
     # TODO: figure out how to set x axis labels to exactly 'splits'
     # plt.xticks()
-    plt.ylabel('Accuracy on new commands (%)')
     plt.ylim((0., 1.))
 
     if log_wandb:
         wandb.log({plot_title: plt})
+
+    plt.show()

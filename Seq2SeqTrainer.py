@@ -83,6 +83,11 @@ class Seq2SeqTrainer():
             callbacks: List[TrainerCallback] = []
             ):
 
+        if train_dataset is None:
+            train_dataset = test_dataset
+
+        if test_dataset is None:
+            test_dataset = train_dataset
 
         if args is None:
             args = Seq2SeqTrainingArguments()
@@ -93,6 +98,7 @@ class Seq2SeqTrainer():
         if criterion is None:
             assert(train_dataset is not None, "Train dataset must be provided if criterion is not provided")
             criterion = torch.nn.NLLLoss(ignore_index=train_dataset.output_lang.pad_index)
+
 
         self.callbacks = callbacks
         self.model = model
@@ -156,9 +162,10 @@ class Seq2SeqTrainer():
                 callback.on_step_end(state=self.state, train_args=self.args)
 
         # Save after training
-        self.model.save(self.args.output_dir)
-        for callback in self.callbacks:
-            callback.on_save(state=self.state, train_args=self.args)
+        if self.args.output_dir:
+            self.model.save(self.args.output_dir)
+            for callback in self.callbacks:
+                callback.on_save(state=self.state, train_args=self.args)
 
         # Training end callback
         for callback in self.callbacks:
@@ -166,6 +173,8 @@ class Seq2SeqTrainer():
 
         if evaluate_after:
             self.evaluate(verbose=verbose)
+
+        return self.model
 
         
 

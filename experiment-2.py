@@ -13,6 +13,7 @@ from tqdm import tqdm
 import Seq2SeqTrainer
 import Seq2SeqModel
 import Seq2SeqDataset
+import helper
 from typing import List, Dict, Tuple, Union, Optional
 from CustomTrainerCallback import CustomTrainerCallback
 import config
@@ -21,16 +22,20 @@ n_runs = 1
 
 def length_generalization(
     model: Seq2SeqModel.Seq2SeqModel,
-    model_config: Seq2SeqModel.Seq2SeqModelConfig,
     train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
     run_type: str,
     splits: List[int],
     input_lang: scan_dataset.Lang,
     output_lang: scan_dataset.Lang,):
 
-    results = {}
+    results: Dict[int, List] = {}
 
     for i in range(n_runs):
+
+        custom_callback = CustomTrainerCallback(run_index=i, run_type=run_type)
+
+        # Load model
+        model = model.load(path=f'saved-models/{custom_callback._run_to_string()}')
 
         # Evaluate on various lengths
         for split in splits:
@@ -42,21 +47,42 @@ def length_generalization(
                 train=False
             )
 
-            model = model.from_config(model_config)
-
             trainer = Seq2SeqTrainer.Seq2SeqTrainer(model=model,args=train_args,test_dataset=test_dataset,)
             metrics = trainer.evaluate()
-            results[split] = metrics['eval_accuracy']
+            if split not in results:
+                results[split] = [metrics['eval_accuracy']]
+            else:
+                results[split].append(metrics['eval_accuracy'])
+
+    # Plot results
+    helper.plot_bar_chart(
+        results,
+        plot_title=f'Accuracy on {run_type} Split',
+        x_label=run_type,
+        y_label='Accuracy',
+
+    )
 
     # Print results
     for split, result in results.items():
         print('Split: {}, Accuracy: {}'.format(split, sum(result) / len(result)))
 
 
-# def test_sequence_length(oracle=False, experiment_best=False):
-#     # Test how generalization works for different lengths
-#     splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
-#     length_generalization(splits, oracle=oracle, experiment_best=experiment_best)
+def test_sequence_length(model: Seq2SeqModel.Seq2SeqModel,
+    train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
+    run_type: str,
+    input_lang: scan_dataset.Lang,
+    output_lang: scan_dataset.Lang,):
+    # Test how generalization works for different lengths
+    splits = [24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48]
+    length_generalization(
+        model=model,
+        train_args=train_args,
+        run_type=run_type,
+        splits=splits,
+        input_lang=input_lang,
+        output_lang=output_lang,
+    )
 
 
 # def test_command_length():
@@ -183,6 +209,8 @@ def experiment_loop(
 
         # Reset model
         model.from_config(config=model_config)
+
+        custom_callback = CustomTrainerCallback(run_index=i, run_type=run_type)
         
         # Train and evaluate model
         trainer = Seq2SeqTrainer.Seq2SeqTrainer(
@@ -190,10 +218,11 @@ def experiment_loop(
             args=train_args,
             train_dataset=train_dataset,
             test_dataset=test_dataset,
-            callbacks=[CustomTrainerCallback(run_index=i, run_type=run_type)],
+            callbacks=[custom_callback],
         )
         
         model = trainer.train(evaluate_after=False)
+        model.save(path=f'saved-models/{custom_callback._run_to_string()}/')
         metrics = trainer.evaluate()
         accuracies.append(metrics['eval_accuracy'])
 
@@ -210,13 +239,21 @@ def main():
         wandb.init(project="experiment-2", entity="atnlp", config=train_args)
     
     input_lang, output_lang = Seq2SeqDataset.Lang(), Seq2SeqDataset.Lang()
-    experiment_loop(
+    # experiment_loop(
+    #     model=RNNSeq2Seq.RNNSeq2Seq(),
+    #     model_config=config.overall_best_config,
+    #     train_args=train_args,
+    #     run_type='overall_best',
+    #     input_lang=input_lang,
+    #     output_lang=output_lang,
+    # )
+
+    test_sequence_length(
         model=RNNSeq2Seq.RNNSeq2Seq(),
-        model_config=config.overall_best_config,
         train_args=train_args,
-        run_type='overall_best',
         input_lang=input_lang,
         output_lang=output_lang,
+        run_type='overall_best',
     )
 
     experiment_best_config = RNNSeq2Seq.RNNSeq2SeqConfig(
