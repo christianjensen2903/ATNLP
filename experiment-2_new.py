@@ -1,8 +1,8 @@
 from collections import defaultdict
 
 import scan_dataset
-import models
-import pipeline
+import models_new
+import pipeline_new
 import torch
 import wandb
 import os
@@ -32,7 +32,7 @@ test_dataset = scan_dataset.ScanDataset(
 
 MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
-n_iter = 100000
+n_iter = 10000
 n_runs = 1
 
 overall_best = {
@@ -59,21 +59,35 @@ def run_overall_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
-                                    n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
-            device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
-                                    overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
-                                    overall_best['ATTENTION']).to(device)
+        # encoder = models_new.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
+        #                             n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
+        #     device)
+        # decoder = models_new.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
+        #                             overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
+        #                             overall_best['ATTENTION']).to(device)
 
 
-        model = models.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
+        config = models_new.RNNSeq2SeqConfig(
+            pad_index=scan_dataset.PAD_token,
+            sos_index=scan_dataset.SOS_token,
+            eos_index=scan_dataset.EOS_token,
+            hidden_size=overall_best['HIDDEN_SIZE'],
+            n_layers=overall_best['N_LAYERS'],
+            dropout_p=overall_best['DROPOUT'],
+            attention=overall_best['ATTENTION'],
+            rnn_type=overall_best['RNN_TYPE'],
+            teacher_forcing_ratio=0.5,
+            input_vocab_size=train_dataset.input_lang.n_words,
+            output_vocab_size=train_dataset.output_lang.n_words,
+            )
+        model = models_new.RNNSeq2Seq().from_config(config)
 
-        model = pipeline.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
+
+        model = pipeline_new.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
         # pickle.dump(encoder, open(f'runs/overall_best_encoder_exp_2_run_{run}.sav', 'wb'))
         # pickle.dump(decoder, open(f'runs/overall_best_decoder_exp_2_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, model))
+        results.append(pipeline_new.evaluate(test_dataset, model))
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for overall best: {}'.format(avg_accuracy))
@@ -85,20 +99,20 @@ def run_experiment_best():
     results = []
     # Train 5 times and average the results
     for run in range(n_runs):
-        encoder = models.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
+        encoder = models_new.EncoderRNN(train_dataset.input_lang.n_words, overall_best['HIDDEN_SIZE'], device=device,
                                     n_layers=overall_best['N_LAYERS'], rnn_type=overall_best['RNN_TYPE'], dropout_p=overall_best['DROPOUT']).to(
             device)
-        decoder = models.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
+        decoder = models_new.DecoderRNN(train_dataset.output_lang.n_words, overall_best['HIDDEN_SIZE'],
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
                                     overall_best['ATTENTION']).to(device)
 
-        model = models.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
+        model = models_new.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
 
-        model = pipeline.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
+        model = pipeline_new.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
         # pickle.dump(encoder, open(f'runs/experiment_best_encoder_exp_2_run_{run}.sav', 'wb'))
         # pickle.dump(decoder, open(f'runs/experiment_best_decoder_exp_2_run_{run}.sav', 'wb'))
-        results.append(pipeline.evaluate(test_dataset, model))
+        results.append(pipeline_new.evaluate(test_dataset, model))
 
     avg_accuracy = sum(results) / len(results)
     print('Average accuracy for experiment best: {}'.format(avg_accuracy))
@@ -123,10 +137,10 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
                 train=False
             )
             if oracle:
-                results[split].append(pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device))
+                results[split].append(pipeline_new.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device))
             else:
                 results[split].append(
-                    pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
+                    pipeline_new.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
     
     print(f'{plot_title}: {results}')
 
@@ -259,7 +273,7 @@ def oracle_test(experiment_best=False):
             train=False
         )
 
-        accuracy = pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device)
+        accuracy = pipeline_new.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device)
 
         results.append(accuracy)
 
