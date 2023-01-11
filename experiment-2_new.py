@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import scan_dataset
+import scan_dataset_new
 import models_new
 import pipeline_new
 import torch
@@ -13,24 +13,22 @@ from tqdm import tqdm
 
 log_wandb = False
 
-input_lang = scan_dataset.Lang()
-output_lang = scan_dataset.Lang()
+input_lang = scan_dataset_new.Lang()
+output_lang = scan_dataset_new.Lang()
 
-train_dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+train_dataset = scan_dataset_new.ScanDataset(
+    split=scan_dataset_new.ScanSplit.LENGTH_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
     train=True
 )
 
-test_dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+test_dataset = scan_dataset_new.ScanDataset(
+    split=scan_dataset_new.ScanSplit.LENGTH_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
     train=False
 )
-
-MAX_LENGTH = max(train_dataset.input_lang.max_length, train_dataset.output_lang.max_length)
 
 n_iter = 10000
 n_runs = 1
@@ -68,9 +66,9 @@ def run_overall_best():
 
 
         config = models_new.RNNSeq2SeqConfig(
-            pad_index=scan_dataset.PAD_token,
-            sos_index=scan_dataset.SOS_token,
-            eos_index=scan_dataset.EOS_token,
+            pad_index=train_dataset.input_lang.pad_index,
+            sos_index=train_dataset.input_lang.sos_index,
+            eos_index=train_dataset.input_lang.eos_index,
             hidden_size=overall_best['HIDDEN_SIZE'],
             n_layers=overall_best['N_LAYERS'],
             dropout_p=overall_best['DROPOUT'],
@@ -106,7 +104,7 @@ def run_experiment_best():
                                     overall_best['N_LAYERS'], overall_best['RNN_TYPE'], overall_best['DROPOUT'],
                                     overall_best['ATTENTION']).to(device)
 
-        model = models_new.RNNSeq2Seq(scan_dataset.PAD_token, scan_dataset.SOS_token, scan_dataset.EOS_token,encoder, decoder, device=device).to(device)
+        model = models_new.RNNSeq2Seq(scan_dataset_new.PAD_token, scan_dataset_new.SOS_token, scan_dataset_new.EOS_token,encoder, decoder, device=device).to(device)
 
         model = pipeline_new.train(train_dataset, model, n_iter, print_every=100, learning_rate=0.001,
                                           device=device, log_wandb=log_wandb)
@@ -129,8 +127,8 @@ def length_generalization(splits, x_label='Ground-truth action sequence length',
 
         # Evaluate on various lengths
         for split in splits:
-            test_dataset = scan_dataset.ScanDataset(
-                split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+            test_dataset = scan_dataset_new.ScanDataset(
+                split=scan_dataset_new.ScanSplit.LENGTH_SPLIT,
                 split_variation=split,
                 input_lang=input_lang,
                 output_lang=output_lang,
@@ -193,8 +191,8 @@ def inspect_greedy_search(experiment_best=False):
         decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
 
-        test_dataset = scan_dataset.ScanDataset(
-            split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+        test_dataset = scan_dataset_new.ScanDataset(
+            split=scan_dataset_new.ScanSplit.LENGTH_SPLIT,
             input_lang=input_lang,
             output_lang=output_lang,
             train=False
@@ -213,7 +211,7 @@ def inspect_greedy_search(experiment_best=False):
 
                 encoder_outputs, encoder_hidden = encoder(input_tensor.to(device))
 
-                decoder_input = torch.tensor([[scan_dataset.SOS_token]], device=device)
+                decoder_input = torch.tensor([[scan_dataset_new.SOS_token]], device=device)
 
                 decoder_hidden = encoder_hidden
 
@@ -230,7 +228,7 @@ def inspect_greedy_search(experiment_best=False):
 
                     greedy_prob += decode_log_prob
 
-                    if decoder_input.item() == scan_dataset.EOS_token:
+                    if decoder_input.item() == scan_dataset_new.EOS_token:
                         break
     
                 decoder_hidden = encoder_hidden
@@ -266,8 +264,8 @@ def oracle_test(experiment_best=False):
         decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
 
 
-        test_dataset = scan_dataset.ScanDataset(
-            split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+        test_dataset = scan_dataset_new.ScanDataset(
+            split=scan_dataset_new.ScanSplit.LENGTH_SPLIT,
             input_lang=input_lang,
             output_lang=output_lang,
             train=False
