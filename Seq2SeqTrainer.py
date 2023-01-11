@@ -63,6 +63,12 @@ class TrainerCallback():
         """
         pass
 
+    def on_log(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+        """
+        Called when the training is logged.
+        """
+        pass
+
 
 class Seq2SeqTrainer():
 
@@ -111,7 +117,7 @@ class Seq2SeqTrainer():
         for callback in self.callbacks:
             callback.on_train_begin(state=self.state, train_args=self.args)
 
-        for iteration in tqdm(range(0, self.args.n_iter), total=self.args.n_iter, leave=False, desc="Training"):
+        for iteration in tqdm(range(1, self.args.n_iter), total=self.args.n_iter, leave=False, desc="Training"):
             
             self.state.step = iteration
             # Step begin callback
@@ -137,6 +143,8 @@ class Seq2SeqTrainer():
                 log_loss_total = 0
                 if self.args.log_wandb:
                     wandb.log({"loss": log_loss_avg})
+                for callback in self.callbacks:
+                    callback.on_log(state=self.state, train_args=self.args)
 
                 self.state.log_history.append({"loss": log_loss_avg})
 
@@ -174,6 +182,8 @@ class Seq2SeqTrainer():
         
         loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
 
+        loss.backward()
+
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.clip_grad)
         self.optimizer.step()
         return loss.item()
@@ -184,7 +194,6 @@ class Seq2SeqTrainer():
         self.model.eval()
 
         n_correct = []  # number of correct predictions
-        iter = 0
         with torch.no_grad():
             for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating"):
                 input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input, target)
@@ -192,12 +201,6 @@ class Seq2SeqTrainer():
                 max_length = target_tensor.size(1)
 
                 pred = self.model.predict(input_tensor, max_length=max_length)
-
-                if iter < 10:
-                    print(f'Input: {input}')
-                    print(f'Prediction: {pred}')
-                    print(f'Target: {target}')
-                    iter += 1
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()

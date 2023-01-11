@@ -17,67 +17,40 @@ from typing import List, Dict, Tuple, Union, Optional
 from CustomTrainerCallback import CustomTrainerCallback
 import config
 
+n_runs = 1
 
+def length_generalization(
+    model: Seq2SeqModel.Seq2SeqModel,
+    model_config: Seq2SeqModel.Seq2SeqModelConfig,
+    train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
+    run_type: str,
+    splits: List[int],
+    input_lang: scan_dataset.Lang,
+    output_lang: scan_dataset.Lang,):
 
-# experiment_best = {
-#     'HIDDEN_SIZE': 50,  # 25, 50, 100, 200, or 400
-#     'RNN_TYPE': 'GRU',  # RNN, GRU or LSTM
-#     'N_LAYERS': 1,  # 1 or 2
-#     'DROPOUT': 0.5,  # 0, 0.1 or 0.5
-#     'ATTENTION': True,  # True or False
-# }
+    results = {}
 
-# def length_generalization(splits, x_label='Ground-truth action sequence length', plot_title='Sequence length', oracle=False, experiment_best=False):
-#     results = defaultdict(list)
+    for i in range(n_runs):
 
-#     for i in range(n_runs):
-#         encoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_encoder_exp_2_run_{i}.sav', 'rb'))
-#         decoder = pickle.load(open(f'runs/{"experiment" if experiment_best else "overall"}_best_decoder_exp_2_run_{i}.sav', 'rb'))
+        # Evaluate on various lengths
+        for split in splits:
+            test_dataset = scan_dataset.ScanDataset(
+                split=scan_dataset.ScanSplit.LENGTH_SPLIT,
+                split_variation=split,
+                input_lang=input_lang,
+                output_lang=output_lang,
+                train=False
+            )
 
-#         # Evaluate on various lengths
-#         for split in splits:
-#             test_dataset = scan_dataset.ScanDataset(
-#                 split=scan_dataset.ScanSplit.LENGTH_SPLIT,
-#                 split_variation=split,
-#                 input_lang=input_lang,
-#                 output_lang=output_lang,
-#                 train=False
-#             )
-#             if oracle:
-#                 results[split].append(pipeline.oracle_eval(test_dataset, encoder, decoder, verbose=False, device=device))
-#             else:
-#                 results[split].append(
-#                     pipeline.evaluate(test_dataset, encoder, decoder, max_length=MAX_LENGTH, verbose=False, device=device))
-    
-#     print(f'{plot_title}: {results}')
+            model = model.from_config(model_config)
 
-#     # Average results
-#     mean_results = {}
-#     for split, result in results.items():
-#         mean_results[split] = sum(result) / len(result)
+            trainer = Seq2SeqTrainer.Seq2SeqTrainer(model=model,args=train_args,test_dataset=test_dataset,)
+            metrics = trainer.evaluate()
+            results[split] = metrics['eval_accuracy']
 
-#     # Find standard deviation
-#     std_results = {}
-#     for split, result in results.items():
-#         std_results[split] = np.std(result)
-
-#     # Plot bar chart
-#     plt.bar(splits, list(mean_results.values()), align='center', yerr=list(std_results.values()),
-#             capsize=5)
-#     plt.xlabel(x_label)
-#     # TODO: figure out how to set x axis labels to exactly 'splits'
-#     # plt.xticks()
-#     plt.ylabel('Accuracy on new commands (%)')
-#     plt.ylim((0., 1.))
-
-#     if log_wandb:
-#         wandb.log({plot_title: plt})
-
-#     # plt.show()
-
-#     # Print results
-#     for split, result in results.items():
-#         print('Split: {}, Accuracy: {}'.format(split, sum(result) / len(result)))
+    # Print results
+    for split, result in results.items():
+        print('Split: {}, Accuracy: {}'.format(split, sum(result) / len(result)))
 
 
 # def test_sequence_length(oracle=False, experiment_best=False):
@@ -191,22 +164,24 @@ def experiment_loop(
     model: Seq2SeqModel.Seq2SeqModel,
     model_config: Seq2SeqModel.Seq2SeqModelConfig,
     train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
-    run_type: str,):
+    run_type: str,
+    input_lang: scan_dataset.Lang,
+    output_lang: scan_dataset.Lang,):
 
     accuracies = []
 
-    for i in range(1):
+    for i in range(n_runs):
         # Load dataset
-        input_lang, output_lang = Seq2SeqDataset.Lang(), Seq2SeqDataset.Lang()
         train_dataset = scan_dataset.ScanDataset(input_lang = input_lang, output_lang = output_lang, split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = True)
         test_dataset = scan_dataset.ScanDataset(input_lang = input_lang, output_lang = output_lang, split = scan_dataset.ScanSplit.LENGTH_SPLIT, train = False)
 
+        model_config.input_vocab_size = input_lang.n_words
+        model_config.output_vocab_size = output_lang.n_words
+        model_config.pad_index = input_lang.pad_index
+        model_config.sos_index = input_lang.sos_index
+        model_config.eos_index = input_lang.eos_index
+
         # Reset model
-        model_config.input_vocab_size = train_dataset.input_lang.n_words
-        model_config.output_vocab_size = train_dataset.output_lang.n_words
-        model_config.pad_index = train_dataset.input_lang.pad_index
-        model_config.sos_index = train_dataset.input_lang.sos_index
-        model_config.eos_index = train_dataset.input_lang.eos_index
         model.from_config(config=model_config)
         
         # Train and evaluate model
@@ -234,12 +209,31 @@ def main():
         wandb.login()
         wandb.init(project="experiment-2", entity="atnlp", config=train_args)
     
-
+    input_lang, output_lang = Seq2SeqDataset.Lang(), Seq2SeqDataset.Lang()
     experiment_loop(
         model=RNNSeq2Seq.RNNSeq2Seq(),
         model_config=config.overall_best_config,
         train_args=train_args,
-        run_type='overall_best'
+        run_type='overall_best',
+        input_lang=input_lang,
+        output_lang=output_lang,
+    )
+
+    experiment_best_config = RNNSeq2Seq.RNNSeq2SeqConfig(
+        hidden_size=50,
+        rnn_type='GRU',
+        n_layers=1,
+        dropout_p=0.5,
+        attention=True,
+    )
+
+    experiment_loop(
+        model=RNNSeq2Seq.RNNSeq2Seq(),
+        model_config=experiment_best_config,
+        train_args=train_args,
+        run_type='experiment_best',
+        input_lang=input_lang,
+        output_lang=output_lang,
     )
     # run_overall_best()
     # run_experiment_best()

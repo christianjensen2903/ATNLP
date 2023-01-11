@@ -14,7 +14,7 @@ class CustomTrainerCallback(Seq2SeqTrainer.TrainerCallback):
         return f"{self.run_type}-{self.run_index}"
 
 
-    def on_step_end(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
+    def on_log(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
         """
         Called at the end of each training step.
         """

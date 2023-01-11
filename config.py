@@ -15,7 +15,7 @@ overall_best_config = RNNSeq2SeqConfig(
 
 paper_train_args = Seq2SeqTrainingArguments(
     batch_size=1,
-    n_iter=100000,
+    n_iter=10,
     clip_grad=5.0,
     log_wandb=False,
     output_dir="checkpoints",
