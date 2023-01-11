@@ -165,7 +165,6 @@ class Seq2SeqTrainer():
 
     def train_iteration(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor):
         """Train the model for a single iteration."""
-        self.model.train()
         self.optimizer.zero_grad()
 
 
@@ -175,6 +174,8 @@ class Seq2SeqTrainer():
             )
         
         loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
+
+        loss.backward()
 
         torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.clip_grad)
         self.optimizer.step()
