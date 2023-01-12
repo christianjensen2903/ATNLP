@@ -1,19 +1,12 @@
-from collections import defaultdict
 import config
 import scan_dataset
 import RNNSeq2Seq
-import pipeline
 import torch
 import wandb
-import os
-from matplotlib import pyplot as plt
 import numpy as np
-import pickle
 from tqdm import tqdm
 import Seq2SeqTrainer
 import Seq2SeqModel
-import Seq2SeqDataset
-import helper
 from typing import List, Dict, Tuple, Union, Optional
 from CustomTrainerCallback import CustomTrainerCallback
 import config
@@ -35,7 +28,8 @@ class Experiment2(ExperimentBase):
         self.train_models()
         # self.length_generalization(splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'Accuracy on {self.run_type} Split')
         # self.length_generalization(splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'Accuracy on {self.run_type} Split')
-        self.inspect_greedy_search()
+        # self.inspect_greedy_search()
+        self.oracle_test()
 
     def length_generalization(self, splits: List[int], x_label: str = '', plot_title: str = ''):
 
@@ -96,6 +90,41 @@ class Experiment2(ExperimentBase):
         pct_oracle_best = [sum(data) / len(data) for data in results]
         avg_oracle_best = sum(pct_oracle_best) / len(pct_oracle_best)
         print(f'Average amount of oracle search being greater than truth: {avg_oracle_best}')
+
+
+
+    def oracle_test(self):
+        results = []
+
+        for i, model in enumerate(self.saved_models):
+
+            model.eval()
+            
+            n_correct = []  # number of correct predictions
+            with torch.no_grad():
+                for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating with oracle"):
+                    input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input, target)
+
+                    pred, _  = model.predict(input_tensor, oracle_length=target_tensor.size(1))
+
+                    pred = pred.squeeze().cpu().numpy()
+                    ground_truth = target_tensor.numpy().squeeze()
+                    
+                    n_correct.append(np.all(pred == ground_truth))
+
+            accuracy = np.mean(n_correct)
+            results.append(accuracy)
+
+        
+        avg_accuracy = np.mean(results)
+
+        if self.train_args.log_wandb:
+            wandb.log({'oracle_accuracy': avg_accuracy})
+
+        print(f'Average accuracy with oracle: {avg_accuracy}')
+
+            
+
 
 def main():
 
