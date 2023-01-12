@@ -238,30 +238,47 @@ class RNNSeq2Seq(Seq2SeqModel):
 
         return outputs
 
-    def predict(self, input, max_length=100):
-        """Predict the output sequence given the input sequence using greedy search."""
-        batch_size = input.size(0)
+    def predict(self, input, max_length=100, oracle_length=None, oracle_target=None):
 
         # Initialize the output sequence with the SOS token
-        outputs = torch.full((batch_size, max_length), self.pad_index, dtype=torch.long)
-        outputs[:, 0] = self.sos_index
+        outputs = torch.full((max_length,), self.pad_index, dtype=torch.long)
+        outputs[0] = self.sos_index
 
         hidden, enc_outputs = self.encoder(input)
-        decoder_input = torch.full((batch_size, 1), self.sos_index, dtype=torch.long)
+        decoder_input = torch.full((1,1), self.pad_index, dtype=torch.long)
+
+        # If oracle is provided, use it as the max length
+        if oracle_length is not None:
+            max_length = oracle_length
+
+        if oracle_target is not None:
+            max_length = len(oracle_target)
+
+        log_prob = 0
 
         # Decode the sequence one timestep at a time
         for t in range(1, max_length):
             output, hidden = self.decoder(decoder_input, hidden, enc_outputs)
 
-            outputs[:, t] = output.max(1)[1]
-
-            # Find the indices of the EOS tokens in the output
-            eos_indices = torch.where(output.max(1)[1] == self.eos_index)
-
-            # If EOS is found set the rest of the sequence to PAD
-            if len(eos_indices[0]) > 0:
-                outputs[eos_indices[0], t+1:max_length] = self.pad_index
+            if oracle_target is not None:
+                log_prob += output.squeeze().detach()[oracle_target[t]].item()
+                outputs[t] = oracle_target[t]
+            else:
                 
-            decoder_input = output.max(1)[1].unsqueeze(1)
 
-        return outputs
+                # Take the most likely word index (highest value) from the output
+                log_prob += output.squeeze().detach().max().item()
+                outputs[t] = output.squeeze().argmax()
+
+                if oracle_length is not None:
+                    # If eos is found but not at the end of the sequence take the next most likely word
+                    if outputs[t] == self.eos_index and t < max_length - 1:
+                        outputs[t] = output.squeeze().topk(2)[1][1]
+                else:
+                    # If the predicted word is EOS, stop predicting
+                    if outputs[t] == self.eos_index:
+                        break
+
+            decoder_input = outputs[t].unsqueeze(0).unsqueeze(0)
+
+        return outputs, log_prob

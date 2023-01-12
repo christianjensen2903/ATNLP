@@ -1,6 +1,8 @@
 Scan
 wandb
 .env
+plots/
+*.png
 
 .idea
 SCAN/

@@ -54,7 +54,15 @@ class Seq2SeqModel(nn.Module):
     def forward(self, input, target):
         raise NotImplementedError
 
-    def predict(self, input, max_length=100):
+    def predict(self, input: torch.Tensor, max_length: int = 100, oracle_length: int = None, oracle_target: torch.Tensor = None):
+        """Predicts the output sequence given an input sequence
+        
+        Arguments:
+            input {torch.Tensor} -- Input sequence
+            max_length {int} -- Maximum length of the output sequence
+            oracle_length {int} -- Length of the output sequence to be used as oracle
+            oracle_target {torch.Tensor} -- Output sequence to be used as oracle
+        """
         raise NotImplementedError
 
     def save(self, path: str, log_wandb: bool = False, wandb_name: str = None):
