@@ -34,6 +34,14 @@ class EncoderRNN(nn.Module):
         return hidden, output
 
 
+    def reset_model(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+        
+        return self
+
+
 class DecoderCell(nn.Module):
     def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, max_length=100):
         super(DecoderCell, self).__init__()
@@ -151,6 +159,13 @@ class DecoderRNN(nn.Module):
 
         return output, hidden
 
+    def reset_model(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+        
+        return self
+
 
 
 @dataclass
@@ -168,10 +183,17 @@ class RNNSeq2SeqConfig(Seq2SeqModelConfig):
 
 class RNNSeq2Seq(Seq2SeqModel):
     def __init__(self, config: RNNSeq2SeqConfig = None):
-        super(RNNSeq2Seq, self).__init__()
+        super(RNNSeq2Seq, self).__init__(config)
+        self.config = config
+        if config:
+            self.from_config(config)
         
-    def from_config(self, config: RNNSeq2SeqConfig):
-        super().from_config(config)
+    def from_config(self, config: RNNSeq2SeqConfig): 
+        self.pad_index = config.pad_index
+        self.sos_index = config.sos_index
+        self.eos_index = config.eos_index
+        self.input_vocab_size = config.input_vocab_size
+        self.output_vocab_size = config.output_vocab_size
         self.hidden_size = config.hidden_size
         self.n_layers = config.n_layers
         self.dropout_p = config.dropout_p
@@ -180,6 +202,19 @@ class RNNSeq2Seq(Seq2SeqModel):
         self.teacher_forcing_ratio = config.teacher_forcing_ratio
         self.encoder = EncoderRNN(self.input_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p)
         self.decoder = DecoderRNN(self.output_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p, self.attention)
+
+        self.reset_model()
+
+        return self
+
+        
+
+    def reset_model(self):
+        self.encoder.reset_model()
+        self.decoder.reset_model()
+
+        return self
+
 
     def forward(self, input, target):
         batch_size = input.size(0)

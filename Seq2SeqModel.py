@@ -4,6 +4,7 @@ import torch
 from dataclasses import dataclass
 import pickle
 import os
+import copy
 
 @dataclass
 class Seq2SeqModelConfig():
@@ -17,6 +18,7 @@ class Seq2SeqModelConfig():
 class Seq2SeqModel(nn.Module):
     def __init__(self, config: Seq2SeqModelConfig = None):
         super(Seq2SeqModel, self).__init__()
+        self.config = config
         if config:
             self.from_config(config)
 
@@ -27,11 +29,22 @@ class Seq2SeqModel(nn.Module):
         self.input_vocab_size = config.input_vocab_size
         self.output_vocab_size = config.output_vocab_size
         
-        # Initialize weights
+        self.reset_model()
+
+        return self
+
+
+    def copy(self):
+        return copy.deepcopy(self)
+
+
+    def reset_model(self):
         for layers in self.children():
             for layer in layers:
                 if hasattr(layer, 'reset_parameters'):
                     layer.reset_parameters()
+        
+        return self
 
 
 
