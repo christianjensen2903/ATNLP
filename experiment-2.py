@@ -85,12 +85,6 @@ def test_sequence_length(model: Seq2SeqModel.Seq2SeqModel,
     )
 
 
-# def test_command_length():
-#     # Test how generalization works for different command lengths
-#     splits = [4, 6, 7, 8, 9]
-#     length_generalization(splits, 'Command Length', 'Command Length')
-
-
 # def inspect_greedy_search(experiment_best=False):
 #     results = []
 

@@ -71,11 +71,11 @@ class Seq2SeqModel(nn.Module):
         path += '/model.sav'
         # torch.save(self.state_dict(), path)
         pickle.dump(self, open(path, 'wb'))
-        if log_wandb:
-            wandb_name = wandb_name if wandb_name else 'model-checkpoint.sav'
-            artifact = wandb.Artifact(wandb_name, type='model')
-            artifact.add_file(path)
-            wandb.log_artifact(artifact)
+        # if log_wandb:
+        #     wandb_name = wandb_name if wandb_name else 'model-checkpoint.sav'
+        #     artifact = wandb.Artifact(wandb_name, type='model')
+        #     artifact.add_file(path)
+        #     wandb.log_artifact(artifact)
 
 
     def load(self, path: str, from_wandb: bool = False, wandb_name = None):

@@ -26,9 +26,9 @@ class Experiment2(ExperimentBase):
 
     def run(self):
         self.train_models()
-        # self.length_generalization(splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'Accuracy on {self.run_type} Split')
-        # self.length_generalization(splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'Accuracy on {self.run_type} Split')
-        # self.inspect_greedy_search()
+        self.length_generalization(splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
+        self.length_generalization(splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
+        self.inspect_greedy_search()
         self.oracle_test()
 
     def length_generalization(self, splits: List[int], x_label: str = '', plot_title: str = ''):
@@ -59,6 +59,7 @@ class Experiment2(ExperimentBase):
             results=results,
             x_label=x_label,
             y_label='Accuracy on new commands (%)',
+            plot_title=plot_title,
             save_path=f'plots/length-generalization-{self.run_type}.png'
         )
 
@@ -75,8 +76,6 @@ class Experiment2(ExperimentBase):
                 for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating"):
                     input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input, target)
 
-                    max_length = target_tensor.size(1)
-
                     _, greedy_prob = model.predict(input_tensor, max_length=100)
 
                     _, oracle_prob = model.predict(input_tensor, oracle_target=target_tensor)
@@ -89,7 +88,9 @@ class Experiment2(ExperimentBase):
         # Calcate average amount of oracle search being greater than truth
         pct_oracle_best = [sum(data) / len(data) for data in results]
         avg_oracle_best = sum(pct_oracle_best) / len(pct_oracle_best)
-        print(f'Average amount of oracle search being greater than truth: {avg_oracle_best}')
+        if self.train_args.log_wandb:
+            wandb.log({'oracle_search_pct': avg_oracle_best})
+        print(f'Average amount of oracle search being greater than greedy: {avg_oracle_best}')
 
 
 
@@ -99,7 +100,7 @@ class Experiment2(ExperimentBase):
         for i, model in enumerate(self.saved_models):
 
             model.eval()
-            
+
             n_correct = []  # number of correct predictions
             with torch.no_grad():
                 for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating with oracle"):
@@ -130,12 +131,22 @@ def main():
 
     train_args = config.paper_train_args
 
+    # Initialize wandb
+
+    if train_args.log_wandb:
+        wandb.init(
+            project="experiment-2",
+            entity="atnlp",
+            config=train_args,
+            reinit=True,
+            tags=['experiment-2', 'overall_best'])
+
     Experiment2(
         model=RNNSeq2Seq.RNNSeq2Seq(),
         model_config=config.overall_best_config,
         train_args=train_args,
         run_type='overall_best',
-        n_runs=1,
+        n_runs=5,
     ).run()
 
 

@@ -11,7 +11,7 @@ class CustomTrainerCallback(Seq2SeqTrainer.TrainerCallback):
         self.run_type = run_type
 
     def _run_to_string(self):
-        return f"{self.run_type}-{self.run_index}"
+        return f"{self.run_index}"
 
 
     def on_log(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
@@ -25,10 +25,10 @@ class CustomTrainerCallback(Seq2SeqTrainer.TrainerCallback):
         if train_args.log_wandb:
             wandb.log(log)
 
-    def on_save(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
-        super().on_save(train_args, state, **kwargs)
-        if train_args.log_wandb:
-            artifact = wandb.Artifact(f'{self._run_to_string()}-checkpoint.sav', type='model')
-            artifact.add_file(train_args.output_dir + "-checkpoint.sav")
-            wandb.log_artifact(artifact)
+    # def on_save(self, train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments, state: Seq2SeqTrainer.TrainerState, **kwargs):
+    #     super().on_save(train_args, state, **kwargs)
+    #     if train_args.log_wandb:
+    #         artifact = wandb.Artifact(f'{self._run_to_string()}-checkpoint.sav', type='model')
+    #         artifact.add_file(train_args.output_dir + "-checkpoint.sav")
+    #         wandb.log_artifact(artifact)
 

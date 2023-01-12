@@ -247,6 +247,8 @@ class RNNSeq2Seq(Seq2SeqModel):
         if oracle_target is not None:
             max_length = oracle_target.size(1)
 
+        oracle_target = oracle_target.squeeze() if oracle_target is not None else None
+
 
         # Initialize the output sequence with the SOS token
         outputs = torch.full((max_length,), self.pad_index, dtype=torch.long)

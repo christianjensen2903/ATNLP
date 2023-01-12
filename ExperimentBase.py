@@ -74,12 +74,16 @@ class ExperimentBase:
             self.saved_models.append(model)
             metrics = trainer.evaluate()
             accuracies.append(metrics['eval_accuracy'])
+        
+        avg_accuracy = np.mean(accuracies)
 
-        print(f'Average accuracy for {self.run_type}: {np.mean(accuracies)}')
+        if self.train_args.log_wandb:
+            wandb.log({f'avg_accuracy': avg_accuracy})
+
+        print(f'Average accuracy: {avg_accuracy}')
 
 
-    def plot_bar_chart(self, results: Dict[int, List[float]] = {}, x_label: str = '', y_label: str = '', plot_title: str = '',
-                   log_wandb: bool = False, save_path: Optional[str] = None):
+    def plot_bar_chart(self, results: Dict[int, List[float]] = {}, x_label: str = '', y_label: str = '', plot_title: str = '', save_path: Optional[str] = None):
         # Average results
         mean_results = {}
         for split, result in results.items():
@@ -92,15 +96,16 @@ class ExperimentBase:
         
 
         # Plot bar chart
-        plt.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(sem_results.values()), capsize=5)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
+        fig, ax = plt.subplots()
+        ax.bar(list(results.keys()), list(mean_results.values()), align='center', yerr=list(sem_results.values()), capsize=5)
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
         # TODO: figure out how to set x axis labels to exactly 'splits'
         # plt.xticks()
-        plt.ylim((0., 1.))
+        ax.set_ylim(bottom=0, top=1)
 
-        if log_wandb:
-            wandb.log({plot_title: plt})
+        # if self.train_args.log_wandb:
+        #     wandb.log({plot_title: fig})
 
         if save_path:
             plt.savefig(save_path)
