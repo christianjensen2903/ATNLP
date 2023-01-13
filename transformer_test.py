@@ -1,12 +1,6 @@
 import scan_dataset
-import RNNSeq2Seq
-import pipeline
 import torch
-from matplotlib import pyplot as plt
-import wandb
 import numpy as np
-from transformers import MarianMTModel, MarianTokenizer
-from transformers import MarianConfig
 import torch
 from transformer import Seq2SeqTransformer
 
