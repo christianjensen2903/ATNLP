@@ -27,10 +27,10 @@ class Experiment2(ExperimentBase):
 
     def run(self):
         self.train_models()
-        self.length_generalization(split=self.split, splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
-        self.length_generalization(split=self.split, splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
-        self.inspect_greedy_search()
-        self.oracle_test()
+        # self.length_generalization(split=self.split, splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
+        # self.length_generalization(split=self.split, splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
+        # self.inspect_greedy_search()
+        # self.oracle_test()
 
 
     def inspect_greedy_search(self):
@@ -100,23 +100,39 @@ def main():
 
     train_args = config.paper_train_args
 
-    # Initialize wandb
+    for model_type in ['overall_best', 'experiment_best']:
 
-    if train_args.log_wandb:
-        wandb.init(
-            project="experiment-2",
-            entity="atnlp",
-            config=train_args,
-            reinit=True,
-            tags=['experiment-2', 'overall_best'])
+        if model_type == 'overall_best':
+            model = RNNSeq2Seq.RNNSeq2Seq()
+            model_config = config.overall_best_config
+        elif model_type == 'experiment_best':
+            model = RNNSeq2Seq.RNNSeq2Seq()
+            model_config = RNNSeq2Seq.RNNSeq2SeqConfig(
+                hidden_size=50,
+                n_layers=1,
+                dropout_p=0.5,
+                attention=True,
+                rnn_type="GRU",
+                teacher_forcing_ratio=0.5,
+            )
 
-    Experiment2(
-        model=RNNSeq2Seq.RNNSeq2Seq(),
-        model_config=config.overall_best_config,
-        train_args=train_args,
-        run_type='overall_best',
-        n_runs=5,
-    ).run()
+        # Initialize wandb
+
+        if train_args.log_wandb:
+            wandb.init(
+                project="experiment-2",
+                entity="atnlp",
+                config=train_args,
+                reinit=True,
+                tags=['experiment-2', model_type])
+
+        Experiment2(
+            model=model,
+            model_config=model_config,
+            train_args=train_args,
+            run_type=model_type,
+            n_runs=5,
+        ).run()
 
 
 

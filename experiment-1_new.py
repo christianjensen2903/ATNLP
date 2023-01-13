@@ -34,22 +34,39 @@ class Experiment1(ExperimentBase):
 def main():
     train_args = config.paper_train_args
 
-    # Initialize wandb
-    if train_args.log_wandb:
-        wandb.init(
-            project="experiment-1",
-            entity="atnlp",
-            config=train_args,
-            reinit=True,
-            tags=['experiment-1', 'overall_best'])
+    for model_type in ['overall_best', 'experiment_best']:
 
-    Experiment1(
-        model=RNNSeq2Seq.RNNSeq2Seq(),
-        model_config=config.overall_best_config,
-        train_args=train_args,
-        run_type='overall_best',
-        n_runs=1,
-    ).run()
+        if model_type == 'overall_best':
+            model = RNNSeq2Seq.RNNSeq2Seq()
+            model_config = config.overall_best_config
+        elif model_type == 'experiment_best':
+            model = RNNSeq2Seq.RNNSeq2Seq()
+            model_config = RNNSeq2Seq.RNNSeq2SeqConfig(
+                hidden_size=200,
+                n_layers=2,
+                dropout_p=0,
+                attention=False,
+                rnn_type="LSTM",
+                teacher_forcing_ratio=0.5,
+            )
+
+        # Initialize wandb
+
+        if train_args.log_wandb:
+            wandb.init(
+                project="experiment-1",
+                entity="atnlp",
+                config=train_args,
+                reinit=True,
+                tags=['experiment-1', model_type])
+
+        Experiment1(
+            model=model,
+            model_config=model_config,
+            train_args=train_args,
+            run_type=model_type,
+            n_runs=5,
+        ).run()
 
 
 
