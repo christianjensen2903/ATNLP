@@ -22,46 +22,15 @@ class Experiment2(ExperimentBase):
                  run_type: str,
                  n_runs: int,
                   ):
-        super().__init__(model, model_config, train_args, run_type, n_runs, split=scan_dataset.ScanSplit.LENGTH_SPLIT)
+        self.split = scan_dataset.ScanSplit.LENGTH_SPLIT
+        super().__init__(model, model_config, train_args, run_type, n_runs, split=self.split)
 
     def run(self):
         self.train_models()
-        self.length_generalization(splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
-        self.length_generalization(splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
+        self.length_generalization(split=self.split, splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
+        self.length_generalization(split=self.split, splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
         self.inspect_greedy_search()
         self.oracle_test()
-
-    def length_generalization(self, splits: List[int], x_label: str = '', plot_title: str = ''):
-
-        results: Dict[int, List] = {}
-
-        for i, model in enumerate(self.saved_models):
-
-            # Evaluate on various lengths
-            for split in splits:
-                test_dataset = scan_dataset.ScanDataset(
-                    split=scan_dataset.ScanSplit.LENGTH_SPLIT,
-                    split_variation=split,
-                    input_lang=self.input_lang,
-                    output_lang=self.output_lang,
-                    train=False
-                )
-
-                trainer = Seq2SeqTrainer.Seq2SeqTrainer(model=model,args=self.train_args,test_dataset=test_dataset,)
-                metrics = trainer.evaluate()
-                if split not in results:
-                    results[split] = [metrics['eval_accuracy']]
-                else:
-                    results[split].append(metrics['eval_accuracy'])
-
-        # Plot results
-        self.plot_bar_chart(
-            results=results,
-            x_label=x_label,
-            y_label='Accuracy on new commands (%)',
-            plot_title=plot_title,
-            save_path=f'plots/length-generalization-{self.run_type}.png'
-        )
 
 
     def inspect_greedy_search(self):

@@ -82,6 +82,38 @@ class ExperimentBase:
 
         print(f'Average accuracy: {avg_accuracy}')
 
+    def length_generalization(self, split: scan_dataset.ScanSplit, splits: List[int], x_label: str = '', plot_title: str = ''):
+
+        results: Dict[int, List] = {}
+
+        for i, model in enumerate(self.saved_models):
+
+            # Evaluate on various lengths
+            for split in splits:
+                test_dataset = scan_dataset.ScanDataset(
+                    split=split,
+                    split_variation=split,
+                    input_lang=self.input_lang,
+                    output_lang=self.output_lang,
+                    train=False
+                )
+
+                trainer = Seq2SeqTrainer.Seq2SeqTrainer(model=model,args=self.train_args,test_dataset=test_dataset,)
+                metrics = trainer.evaluate()
+                if split not in results:
+                    results[split] = [metrics['eval_accuracy']]
+                else:
+                    results[split].append(metrics['eval_accuracy'])
+
+        # Plot results
+        self.plot_bar_chart(
+            results=results,
+            x_label=x_label,
+            y_label='Accuracy on new commands (%)',
+            plot_title=plot_title,
+            save_path=f'plots/length-generalization-{self.run_type}.png'
+        )
+
 
     def plot_bar_chart(self, results: Dict[int, List[float]] = {}, x_label: str = '', y_label: str = '', plot_title: str = '', save_path: Optional[str] = None):
         # Average results
