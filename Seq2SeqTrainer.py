@@ -9,7 +9,7 @@ from typing import List, Dict
 
 
 @dataclass
-class Seq2SeqTrainingArguments():
+class Seq2SeqTrainingArguments:
     batch_size: int = 32
     n_iter: int = 10000
     learning_rate: float = 0.001
@@ -27,61 +27,72 @@ class TrainerState:
     """
     Object containing the state of the trainer.
     """
+
     step: int = 0
     log_history: List[Dict[str, float]] = field(default_factory=list)
 
 
-class TrainerCallback():
-
-    def on_train_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+class TrainerCallback:
+    def on_train_begin(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called at the beginning of the training.
         """
         pass
 
-    def on_train_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+    def on_train_end(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called at the end of the training.
         """
         pass
 
-    def on_step_begin(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+    def on_step_begin(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called at the beginning of each training step.
         """
         pass
 
-    def on_step_end(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+    def on_step_end(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called at the end of each training step.
         """
         pass
 
-    def on_save(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+    def on_save(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called when the model is saved.
         """
         pass
 
-    def on_log(self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs):
+    def on_log(
+        self, train_args: Seq2SeqTrainingArguments, state: TrainerState, **kwargs
+    ):
         """
         Called when the training is logged.
         """
         pass
 
 
-class Seq2SeqTrainer():
-
+class Seq2SeqTrainer:
     def __init__(
-            self,
-            model: Seq2SeqModel.Seq2SeqModel,
-            args: Seq2SeqTrainingArguments = None,
-            optimizer: torch.optim.Optimizer = None,
-            criterion: torch.nn.Module = None,
-            train_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
-            test_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
-            callbacks: List[TrainerCallback] = []
-            ):
+        self,
+        model: Seq2SeqModel.Seq2SeqModel,
+        args: Seq2SeqTrainingArguments = None,
+        optimizer: torch.optim.Optimizer = None,
+        criterion: torch.nn.Module = None,
+        train_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
+        test_dataset: Seq2SeqDataset.Seq2SeqDataset = None,
+        callbacks: List[TrainerCallback] = [],
+    ):
 
         if train_dataset is None:
             train_dataset = test_dataset
@@ -94,11 +105,15 @@ class Seq2SeqTrainer():
 
         if optimizer is None:
             optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-        
-        if criterion is None:
-            assert(train_dataset is not None, "Train dataset must be provided if criterion is not provided")
-            criterion = torch.nn.NLLLoss(ignore_index=train_dataset.output_lang.pad_index)
 
+        if criterion is None:
+            assert (
+                train_dataset is not None,
+                "Train dataset must be provided if criterion is not provided",
+            )
+            criterion = torch.nn.NLLLoss(
+                ignore_index=train_dataset.output_lang.pad_index
+            )
 
         self.callbacks = callbacks
         self.model = model
@@ -111,8 +126,7 @@ class Seq2SeqTrainer():
 
         self.state = TrainerState()
 
-
-    def train(self, verbose: bool = True, evaluate_after: bool = True):
+    def train(self, verbose: bool = True, evaluate_after: bool = False):
         """Train the model for n_iter iterations."""
         self.model.train()
 
@@ -123,14 +137,21 @@ class Seq2SeqTrainer():
         for callback in self.callbacks:
             callback.on_train_begin(state=self.state, train_args=self.args)
 
-        for iteration in tqdm(range(1, self.args.n_iter), total=self.args.n_iter, leave=False, desc="Training"):
-            
+        for iteration in tqdm(
+            range(1, self.args.n_iter),
+            total=self.args.n_iter,
+            leave=False,
+            desc="Training",
+        ):
+
             self.state.step = iteration
             # Step begin callback
             for callback in self.callbacks:
                 callback.on_step_begin(state=self.state, train_args=self.args)
-            
-            random_batch = np.random.choice(len(self.train_dataset), self.args.batch_size)
+
+            random_batch = np.random.choice(
+                len(self.train_dataset), self.args.batch_size
+            )
             X, y = self.train_dataset[random_batch]
 
             input_tensor, target_tensor = self.train_dataset.convert_to_tensor(X, y)
@@ -142,8 +163,11 @@ class Seq2SeqTrainer():
             if iteration % self.args.print_every == 0 and verbose:
                 print_loss_avg = print_loss_total / self.args.log_every
                 print_loss_total = 0
-                print('%d (%d%%): %.4f' % (iteration, iteration / self.args.n_iter * 100, print_loss_avg))
-            
+                print(
+                    "%d (%d%%): %.4f"
+                    % (iteration, iteration / self.args.n_iter * 100, print_loss_avg)
+                )
+
             if iteration % self.args.log_every == 0:
                 log_loss_avg = log_loss_total / self.args.log_every
                 log_loss_total = 0
@@ -154,9 +178,10 @@ class Seq2SeqTrainer():
                 for callback in self.callbacks:
                     callback.on_log(state=self.state, train_args=self.args)
 
-                
-
-            if self.args.save_steps is not None and iteration % self.args.save_steps == 0:
+            if (
+                self.args.save_steps is not None
+                and iteration % self.args.save_steps == 0
+            ):
                 self.model.save(self.args.output_dir)
 
             # Step end callback
@@ -178,19 +203,16 @@ class Seq2SeqTrainer():
 
         return self.model
 
-        
-
     def train_iteration(self, input_tensor: torch.Tensor, target_tensor: torch.Tensor):
         """Train the model for a single iteration."""
         self.model.train()
         self.optimizer.zero_grad()
 
-
         outputs = self.model(
             input_tensor.to(self.device),
             target_tensor.to(self.device),
-            )
-        
+        )
+
         loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
 
         loss.backward()
@@ -199,19 +221,25 @@ class Seq2SeqTrainer():
         self.optimizer.step()
         return loss.item()
 
-    
     def evaluate(self, verbose: bool = False):
         """Evaluate the model on the test dataset."""
         self.model.eval()
 
         n_correct = []  # number of correct predictions
         with torch.no_grad():
-            for input, target in tqdm(self.test_dataset, total=len(self.test_dataset), leave=False, desc="Evaluating"):
-                input_tensor, target_tensor = self.test_dataset.convert_to_tensor(input, target)
+            for input, target in tqdm(
+                self.test_dataset,
+                total=len(self.test_dataset),
+                leave=False,
+                desc="Evaluating",
+            ):
+                input_tensor, target_tensor = self.test_dataset.convert_to_tensor(
+                    input, target
+                )
 
                 max_length = target_tensor.size(1)
 
-                pred, _  = self.model.predict(input_tensor, max_length=max_length)
+                pred, _ = self.model.predict(input_tensor, max_length=max_length)
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
@@ -224,5 +252,3 @@ class Seq2SeqTrainer():
             print("Evaluation Accuracy", accuracy)
 
         return {"eval_accuracy": accuracy}
-
-                

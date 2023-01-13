@@ -1,8 +1,7 @@
 import scan_dataset
 import torch
 import numpy as np
-import torch
-from transformer import Seq2SeqTransformer
+from transformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
 
 
 input_lang = scan_dataset.Lang()
@@ -12,14 +11,14 @@ dataset = scan_dataset.ScanDataset(
     split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
-    train=True
+    train=True,
 )
 
 test_dataset = scan_dataset.ScanDataset(
     split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
-    train=False
+    train=False,
 )
 
 MAX_LENGTH = max(dataset.input_lang.max_length, dataset.output_lang.max_length)
@@ -34,13 +33,23 @@ BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
 
+transformer_config = Seq2SeqTransformerConfig(
+    num_encoder_layers=NUM_ENCODER_LAYERS,
+    num_decoder_layers=NUM_DECODER_LAYERS,
+    emb_size=EMB_SIZE,
+    nhead=NHEAD,
+    input_vocab_size=SRC_VOCAB_SIZE,
+    target_vocab_size=TGT_VOCAB_SIZE,
+    dim_feedforward=FFN_HID_DIM,
+    dropout=0.1,
+    pad_index=3,
+)
+
 n_iters = 10
 
-loss_fn = torch.nn.CrossEntropyLoss(ignore_index=scan_dataset.PAD_token)
+loss_fn = torch.nn.CrossEntropyLoss(ignore_index=3)
 
-
-model = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE,
-                                 NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
+model = Seq2SeqTransformer(transformer_config)
 
 
 def train_epoch(model, optimizer):
@@ -55,7 +64,6 @@ def train_epoch(model, optimizer):
 
         # tgt_input = tgt[:-1, :]
 
-    
         logits = model(src, tgt)
 
         optimizer.zero_grad()
@@ -68,6 +76,7 @@ def train_epoch(model, optimizer):
         losses += loss.item()
 
     return losses / n_iters
+
 
 print("Training model")
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
@@ -98,4 +107,3 @@ for epoch in range(10):
 #         losses += loss.item()
 
 #     return losses / len(val_dataloader)
-
