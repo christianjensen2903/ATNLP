@@ -82,6 +82,8 @@ class ExperimentBase:
 
         print(f'Average accuracy: {avg_accuracy}')
 
+
+
     def length_generalization(self, split: scan_dataset.ScanSplit, splits: List[int], x_label: str = '', plot_title: str = ''):
 
         results: Dict[int, List] = {}
@@ -91,7 +93,7 @@ class ExperimentBase:
             # Evaluate on various lengths
             for split in splits:
                 test_dataset = scan_dataset.ScanDataset(
-                    split=split,
+                    split=self.split,
                     split_variation=split,
                     input_lang=self.input_lang,
                     output_lang=self.output_lang,
@@ -111,7 +113,7 @@ class ExperimentBase:
             x_label=x_label,
             y_label='Accuracy on new commands (%)',
             plot_title=plot_title,
-            save_path=f'plots/length-generalization-{self.run_type}.png'
+            save_path=f'plots/{plot_title}-{self.run_type}.png'
         )
 
 
