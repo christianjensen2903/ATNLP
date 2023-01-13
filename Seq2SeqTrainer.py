@@ -149,10 +149,12 @@ class Seq2SeqTrainer():
                 log_loss_total = 0
                 if self.args.log_wandb:
                     wandb.log({"loss": log_loss_avg})
+
+                self.state.log_history.append({"loss": log_loss_avg})
                 for callback in self.callbacks:
                     callback.on_log(state=self.state, train_args=self.args)
 
-                self.state.log_history.append({"loss": log_loss_avg})
+                
 
             if self.args.save_steps is not None and iteration % self.args.save_steps == 0:
                 self.model.save(self.args.output_dir)
