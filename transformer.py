@@ -80,6 +80,7 @@ class Seq2SeqTransformer(Seq2SeqModel):
         )
         self.eos_index = config.pad_index
         self.eos_index = config.eos_index
+        self.sos_index = config.sos_index
 
         return self
 
@@ -152,7 +153,12 @@ class Seq2SeqTransformer(Seq2SeqModel):
         oracle_length: int = None,
         oracle_target: torch.Tensor = None,
     ):
-        pass
+        num_tokens = input.shape[1]
+        # src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
+        tgt_tokens = self.greedy_decode(
+            input, None, max_len=num_tokens + 5, start_symbol=self.sos_index
+        ).flatten()
+        return tgt_tokens, None
 
     def greedy_decode(self, src, src_mask, max_len, start_symbol):
 
@@ -161,17 +167,17 @@ class Seq2SeqTransformer(Seq2SeqModel):
         for i in range(max_len - 1):
             memory = memory
             tgt_mask = self.transformer.generate_square_subsequent_mask(
-                ys.size(0)
+                ys.size(1)
             ).type(torch.bool)
-            out = self.decode(ys, memory, tgt_mask)
-            out = out.transpose(0, 1)
-            prob = self.generator(out[:, -1])
-            _, next_word = torch.max(prob, dim=1)
-            next_word = next_word.item()
+            out = self.decode(ys, memory, None)
+            # out = out.transpose(0, 1)
+            # prob = self.generator(out[:, -1, :])
+            probs = self.generator(out)
+            prob = probs[:, -1, :]
 
-            ys = torch.cat(
-                [ys, torch.ones(1, 1).type_as(src.data).fill_(next_word)], dim=0
-            )
+            _, next_word = torch.max(prob, dim=1)
+
+            ys = torch.cat([ys, next_word.unsqueeze(0)], dim=1)
             if next_word == self.eos_index:
                 break
         return ys

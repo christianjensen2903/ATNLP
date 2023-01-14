@@ -26,12 +26,12 @@ test_dataset = scan_dataset.ScanDataset(
 
 SRC_VOCAB_SIZE = input_lang.n_words
 TGT_VOCAB_SIZE = output_lang.n_words
-EMB_SIZE = 512
-NHEAD = 8
-FFN_HID_DIM = 512
+EMB_SIZE = 32
+NHEAD = 2
+FFN_HID_DIM = 32
 BATCH_SIZE = 128
-NUM_ENCODER_LAYERS = 3
-NUM_DECODER_LAYERS = 3
+NUM_ENCODER_LAYERS = 2
+NUM_DECODER_LAYERS = 2
 
 
 n_iters = 10
@@ -46,6 +46,8 @@ transformer_config = Seq2SeqTransformerConfig(
     dim_feedforward=FFN_HID_DIM,
     dropout=0.1,
     pad_index=3,
+    eos_index=1,
+    sos_index=0,
 )
 
 train_args = config.paper_train_args
@@ -55,8 +57,10 @@ train_args.batch_size = BATCH_SIZE
 criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
 
 
+model = Seq2SeqTransformer(transformer_config)
+
 trainer = Seq2SeqTrainer.Seq2SeqTrainer(
-    model=Seq2SeqTransformer(transformer_config),
+    model=model,
     args=train_args,
     train_dataset=dataset,
     test_dataset=test_dataset,
@@ -64,3 +68,13 @@ trainer = Seq2SeqTrainer.Seq2SeqTrainer(
 )
 
 trainer.train()
+
+metrics = trainer.evaluate()
+print(metrics)
+
+# for input, target in test_dataset:
+#     input_tensor, target_tensor = test_dataset.convert_to_tensor(input, target)
+
+#     pred = model.predict(input_tensor)
+#     print(pred)
+#     print(target_tensor)

@@ -224,7 +224,7 @@ class Seq2SeqTrainer:
     def evaluate(self, verbose: bool = False):
         """Evaluate the model on the test dataset."""
         self.model.eval()
-
+        iter = 0
         n_correct = []  # number of correct predictions
         with torch.no_grad():
             for input, target in tqdm(
@@ -243,7 +243,11 @@ class Seq2SeqTrainer:
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
-
+                if iter < 10:
+                    print(pred, ground_truth)
+                    iter += 1
+                else:
+                    break
                 n_correct.append(np.all(pred == ground_truth))
 
         accuracy = np.mean(n_correct)
