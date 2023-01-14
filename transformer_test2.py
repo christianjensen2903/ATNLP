@@ -1,7 +1,9 @@
 import scan_dataset
 import torch
 import numpy as np
-from transformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
+
+# from transformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
+from Seq2SeqTransformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
 import Seq2SeqTrainer
 import config
 
@@ -22,7 +24,6 @@ test_dataset = scan_dataset.ScanDataset(
     output_lang=output_lang,
     train=False,
 )
-
 
 SRC_VOCAB_SIZE = input_lang.n_words
 TGT_VOCAB_SIZE = output_lang.n_words
