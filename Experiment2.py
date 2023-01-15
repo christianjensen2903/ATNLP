@@ -121,15 +121,15 @@ class Experiment2(ExperimentBase):
 
 def main():
 
-    train_args = config.paper_train_args
-
     for model_type in ["transformer"]:  # "overall_best", "experiment_best"
 
         criterion = None
         if model_type == "overall_best":
+            train_args = config.paper_train_args
             model = RNNSeq2Seq.RNNSeq2Seq()
             model_config = config.overall_best_config
         elif model_type == "experiment_best":
+            train_args = config.paper_train_args
             model = RNNSeq2Seq.RNNSeq2Seq()
             model_config = RNNSeq2Seq.RNNSeq2SeqConfig(
                 hidden_size=50,
@@ -141,14 +141,8 @@ def main():
             )
         elif model_type == "transformer":
             model = Seq2SeqTransformer.Seq2SeqTransformer()
-            model_config = Seq2SeqTransformer.Seq2SeqTransformerConfig(
-                nhead=4,
-                num_encoder_layers=2,
-                num_decoder_layers=2,
-                dim_feedforward=128,
-                emb_size=128,
-                dropout=0.1,
-            )
+            model_config = config.transformer_config
+            train_args = config.transformer_train_args
             criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
 
         # Initialize wandb
@@ -170,6 +164,8 @@ def main():
             n_runs=5,
             criterion=criterion,
         ).run()
+
+        wandb.finish()
 
 
 if __name__ == "__main__":

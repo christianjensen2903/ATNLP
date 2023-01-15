@@ -47,28 +47,20 @@ class Experiment3(ExperimentBase):
 
 
 def main():
-    train_args = config.paper_train_args
 
     for model_type in ["transformer"]:  # "overall_best", "experiment_best"
         for split in [
             ScanDataset.ScanSplit.FEW_SHOT_SPLIT,
             ScanDataset.ScanSplit.ADD_PRIM_SPLIT,
         ]:
-            # Initialize wandb
-            if train_args.log_wandb:
-                wandb.init(
-                    project="experiment-3",
-                    entity="atnlp",
-                    config=train_args,
-                    reinit=True,
-                    tags=["experiment-3", "overall_best", split],
-                )
 
             criterion = None
             if model_type == "overall_best":
+                train_args = config.paper_train_args
                 model = RNNSeq2Seq.RNNSeq2Seq()
                 model_config = config.overall_best_config
             elif model_type == "experiment_best":
+                train_args = config.paper_train_args
                 model = RNNSeq2Seq.RNNSeq2Seq()
                 model_config = RNNSeq2Seq.RNNSeq2SeqConfig(
                     hidden_size=100,
@@ -80,15 +72,19 @@ def main():
                 )
             elif model_type == "transformer":
                 model = Seq2SeqTransformer.Seq2SeqTransformer()
-                model_config = Seq2SeqTransformer.Seq2SeqTransformerConfig(
-                    nhead=4,
-                    num_encoder_layers=2,
-                    num_decoder_layers=2,
-                    dim_feedforward=128,
-                    emb_size=128,
-                    dropout=0.1,
-                )
+                model_config = config.transformer_config
+                train_args = config.transformer_train_args
                 criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
+
+            # Initialize wandb
+            if train_args.log_wandb:
+                wandb.init(
+                    project="experiment-3",
+                    entity="atnlp",
+                    config=train_args,
+                    reinit=True,
+                    tags=["experiment-3", "overall_best", split],
+                )
 
             Experiment3(
                 model=model,

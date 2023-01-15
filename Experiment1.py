@@ -37,25 +37,26 @@ class Experiment1(ExperimentBase):
 
     def run(self):
         self.train_models()
-        self.length_generalization(
-            split=self.split,
-            splits=["p1", "p2", "p4", "p8", "p16", "p32", "p64"],
-            x_label="Percent of commands used for training",
-            plot_title=f"training_pct_accuracy",
-        )
+        # self.length_generalization(
+        #     split=self.split,
+        #     splits=["p1", "p2", "p4", "p8", "p16", "p32", "p64"],
+        #     x_label="Percent of commands used for training",
+        #     plot_title=f"training_pct_accuracy",
+        # )
 
 
 def main():
-    train_args = config.paper_train_args
 
     for model_type in ["transformer"]:  # "overall_best", "experiment_best"
 
         criterion = None
         if model_type == "overall_best":
             model = RNNSeq2Seq.RNNSeq2Seq()
+            train_args = config.paper_train_args
             model_config = config.overall_best_config
         elif model_type == "experiment_best":
             model = RNNSeq2Seq.RNNSeq2Seq()
+            train_args = config.paper_train_args
             model_config = RNNSeq2Seq.RNNSeq2SeqConfig(
                 hidden_size=200,
                 n_layers=2,
@@ -65,15 +66,9 @@ def main():
                 teacher_forcing_ratio=0.5,
             )
         elif model_type == "transformer":
+            train_args = config.transformer_train_args
             model = Seq2SeqTransformer.Seq2SeqTransformer()
-            model_config = Seq2SeqTransformer.Seq2SeqTransformerConfig(
-                nhead=4,
-                num_encoder_layers=2,
-                num_decoder_layers=2,
-                dim_feedforward=128,
-                emb_size=128,
-                dropout=0.1,
-            )
+            model_config = config.transformer_config
             criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
 
         # Initialize wandb
@@ -91,9 +86,11 @@ def main():
             model_config=model_config,
             train_args=train_args,
             run_type=model_type,
-            n_runs=5,
+            n_runs=1,
             criterion=criterion,
         ).run()
+
+        wandb.finish()
 
 
 if __name__ == "__main__":
