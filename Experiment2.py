@@ -1,5 +1,5 @@
 import config
-import scan_dataset
+import ScanDataset
 import RNNSeq2Seq
 import torch
 import wandb
@@ -24,7 +24,7 @@ class Experiment2(ExperimentBase):
         n_runs: int,
         criterion: torch.nn.Module = None,
     ):
-        self.split = scan_dataset.ScanSplit.LENGTH_SPLIT
+        self.split = ScanDataset.ScanSplit.LENGTH_SPLIT
         super().__init__(
             model,
             model_config,

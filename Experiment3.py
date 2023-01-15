@@ -1,5 +1,5 @@
 import config
-import scan_dataset
+import ScanDataset
 import RNNSeq2Seq
 import torch
 import wandb
@@ -21,7 +21,7 @@ class Experiment3(ExperimentBase):
         train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
         run_type: str,
         n_runs: int,
-        split: scan_dataset.ScanSplit,
+        split: ScanDataset.ScanSplit,
         criterion: torch.nn.Module = None,
     ):
 
@@ -51,8 +51,8 @@ def main():
 
     for model_type in ["transformer"]:  # "overall_best", "experiment_best"
         for split in [
-            scan_dataset.ScanSplit.FEW_SHOT_SPLIT,
-            scan_dataset.ScanSplit.ADD_PRIM_SPLIT,
+            ScanDataset.ScanSplit.FEW_SHOT_SPLIT,
+            ScanDataset.ScanSplit.ADD_PRIM_SPLIT,
         ]:
             # Initialize wandb
             if train_args.log_wandb:

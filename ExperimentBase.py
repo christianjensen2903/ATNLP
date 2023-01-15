@@ -1,4 +1,4 @@
-import scan_dataset
+import ScanDataset
 import wandb
 from matplotlib import pyplot as plt
 import numpy as np
@@ -18,7 +18,7 @@ class ExperimentBase:
         train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
         run_type: str,
         n_runs: int,
-        split: scan_dataset.ScanSplit,
+        split: ScanDataset.ScanSplit,
         criterion: torch.nn.Module = None,
     ):
         self.model = model
@@ -37,16 +37,16 @@ class ExperimentBase:
 
     def load_data(self):
 
-        self.input_lang = scan_dataset.Lang()
-        self.output_lang = scan_dataset.Lang()
+        self.input_lang = ScanDataset.Lang()
+        self.output_lang = ScanDataset.Lang()
 
-        self.train_dataset = scan_dataset.ScanDataset(
+        self.train_dataset = ScanDataset.ScanDataset(
             input_lang=self.input_lang,
             output_lang=self.output_lang,
             split=self.split,
             train=True,
         )
-        self.test_dataset = scan_dataset.ScanDataset(
+        self.test_dataset = ScanDataset.ScanDataset(
             input_lang=self.input_lang,
             output_lang=self.output_lang,
             split=self.split,
@@ -97,7 +97,7 @@ class ExperimentBase:
 
     def length_generalization(
         self,
-        split: scan_dataset.ScanSplit,
+        split: ScanDataset.ScanSplit,
         splits: List[int],
         x_label: str = "",
         plot_title: str = "",
@@ -109,7 +109,7 @@ class ExperimentBase:
 
             # Evaluate on various lengths
             for split in splits:
-                test_dataset = scan_dataset.ScanDataset(
+                test_dataset = ScanDataset.ScanDataset(
                     split=self.split,
                     split_variation=split,
                     input_lang=self.input_lang,

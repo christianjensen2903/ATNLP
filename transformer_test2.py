@@ -1,4 +1,4 @@
-import scan_dataset
+import ScanDataset
 import torch
 import numpy as np
 
@@ -10,18 +10,18 @@ import config
 import wandb
 
 
-input_lang = scan_dataset.Lang()
-output_lang = scan_dataset.Lang()
+input_lang = ScanDataset.Lang()
+output_lang = ScanDataset.Lang()
 
-dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+dataset = ScanDataset.ScanDataset(
+    split=ScanDataset.ScanSplit.SIMPLE_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
     train=True,
 )
 
-test_dataset = scan_dataset.ScanDataset(
-    split=scan_dataset.ScanSplit.SIMPLE_SPLIT,
+test_dataset = ScanDataset.ScanDataset(
+    split=ScanDataset.ScanSplit.SIMPLE_SPLIT,
     input_lang=input_lang,
     output_lang=output_lang,
     train=False,
