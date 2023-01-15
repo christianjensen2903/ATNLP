@@ -10,9 +10,6 @@ import config
 import wandb
 
 
-wandb.init(project="test", entity="atnlp", reinit=True, tags=["transformer"])
-
-
 input_lang = scan_dataset.Lang()
 output_lang = scan_dataset.Lang()
 
@@ -59,6 +56,9 @@ transformer_config = Seq2SeqTransformerConfig(
 train_args = config.paper_train_args
 
 train_args.batch_size = BATCH_SIZE
+
+if train_args.log_wandb:
+    wandb.init(project="test", entity="atnlp", reinit=True, tags=["transformer"])
 
 criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
 

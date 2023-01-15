@@ -59,7 +59,7 @@ class Seq2SeqTransformer(Seq2SeqModel):
         return self
 
     def forward(self, input: Tensor, target: Tensor):
-        return self.transformer(input_ids=input, decoder_input_ids=target).logits
+        return self.transformer(input_ids=input, labels=target).logits
 
     def predict(
         self,
@@ -68,7 +68,14 @@ class Seq2SeqTransformer(Seq2SeqModel):
         oracle_length: int = None,
         oracle_target: torch.Tensor = None,
     ):
-        output = self.transformer.generate(input_ids=input, max_length=max_length)
-        output[:, -1] = self.config.eos_index
+        output = self.transformer.generate(
+            input_ids=input,
+            max_length=max_length
+            + 1,  # +1 due to the model generating an extra token of some reason,
+            bos_token_id=self.config.sos_index,
+            pad_token_id=self.config.pad_index,
+            eos_token_id=self.config.eos_index,
+        )
+        output = output[:, 1:]  # remove the extra token
         return output, None
         # return self.transformer.generate(input_ids=input, max_length=max_length), None

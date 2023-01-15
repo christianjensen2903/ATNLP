@@ -208,16 +208,18 @@ class Seq2SeqTrainer:
         self.model.train()
         self.optimizer.zero_grad()
 
-        target_input = target_tensor[:, :-1]
+        # target_input = target_tensor[:, :-1]
 
         outputs = self.model(
             input_tensor.to(self.device),
-            target_input.to(self.device),
+            target_tensor.to(self.device),
         )
 
-        target_output = target_tensor[:, 1:].contiguous().view(-1)
+        loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
 
-        loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), target_output)
+        # target_output = target_tensor[:, 1:].contiguous().view(-1)
+
+        # loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), target_output)
 
         loss.backward()
 
