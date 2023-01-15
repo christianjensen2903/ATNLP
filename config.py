@@ -3,7 +3,6 @@ from Seq2SeqTrainer import Seq2SeqTrainer, Seq2SeqTrainingArguments
 from RNNSeq2Seq import RNNSeq2SeqConfig
 
 
-
 overall_best_config = RNNSeq2SeqConfig(
     hidden_size=200,
     n_layers=2,
@@ -15,14 +14,10 @@ overall_best_config = RNNSeq2SeqConfig(
 
 paper_train_args = Seq2SeqTrainingArguments(
     batch_size=1,
-    n_iter=10,
+    n_iter=10000,
+    print_every=1000,
+    log_every=100,
     clip_grad=5.0,
-    log_wandb=False,
+    log_wandb=True,
     output_dir="checkpoints",
-
 )
-
-
-
-
-

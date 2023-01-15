@@ -208,12 +208,16 @@ class Seq2SeqTrainer:
         self.model.train()
         self.optimizer.zero_grad()
 
+        target_input = target_tensor[:, :-1]
+
         outputs = self.model(
             input_tensor.to(self.device),
-            target_tensor.to(self.device),
+            target_input.to(self.device),
         )
 
-        loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
+        target_output = target_tensor[:, 1:].contiguous().view(-1)
+
+        loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), target_output)
 
         loss.backward()
 
@@ -239,8 +243,6 @@ class Seq2SeqTrainer:
 
                 max_length = target_tensor.size(1)
 
-                print(input_tensor)
-
                 pred, _ = self.model.predict(input_tensor, max_length=max_length)
 
                 pred = pred.squeeze().cpu().numpy()
@@ -248,8 +250,8 @@ class Seq2SeqTrainer:
                 if iter < 10:
                     print(pred, ground_truth)
                     iter += 1
-                else:
-                    break
+                # else:
+                #     break
                 n_correct.append(np.all(pred == ground_truth))
 
         accuracy = np.mean(n_correct)

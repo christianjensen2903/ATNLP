@@ -33,8 +33,6 @@ class Seq2SeqTransformer(Seq2SeqModel):
             self.from_config(config)
 
     def from_config(self, config: Seq2SeqTransformerConfig):
-        print(f"input_vocab_size: {config.input_vocab_size}")
-        print(f"target_vocab_size: {config.target_vocab_size}")
         marianConfig = MarianConfig(
             vocab_size=config.input_vocab_size,
             decoder_vocab_size=config.target_vocab_size,
@@ -70,4 +68,7 @@ class Seq2SeqTransformer(Seq2SeqModel):
         oracle_length: int = None,
         oracle_target: torch.Tensor = None,
     ):
-        return self.transformer.generate(input_ids=input, max_length=max_length), None
+        output = self.transformer.generate(input_ids=input, max_length=max_length)
+        output[:, -1] = self.config.eos_index
+        return output, None
+        # return self.transformer.generate(input_ids=input, max_length=max_length), None

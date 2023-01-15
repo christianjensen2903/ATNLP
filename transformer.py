@@ -157,9 +157,8 @@ class Seq2SeqTransformer(Seq2SeqModel):
     ):
         preds = torch.ones(1, 1).fill_(self.sos_index).type(torch.long)
 
-        for t in range(1, max_length):
+        for t in range(max_length):
             out = self.forward(input, preds)
-            print(out.shape)
             pred = out.argmax(2)[:, -1].unsqueeze(1)
 
             preds = torch.cat([preds, pred], dim=1)

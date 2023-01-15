@@ -3,9 +3,14 @@ import torch
 import numpy as np
 
 # from transformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
+
 from Seq2SeqTransformer import Seq2SeqTransformer, Seq2SeqTransformerConfig
 import Seq2SeqTrainer
 import config
+import wandb
+
+
+wandb.init(project="test", entity="atnlp", reinit=True, tags=["transformer"])
 
 
 input_lang = scan_dataset.Lang()
@@ -27,9 +32,9 @@ test_dataset = scan_dataset.ScanDataset(
 
 SRC_VOCAB_SIZE = input_lang.n_words
 TGT_VOCAB_SIZE = output_lang.n_words
-EMB_SIZE = 32
-NHEAD = 2
-FFN_HID_DIM = 32
+EMB_SIZE = 128
+NHEAD = 4
+FFN_HID_DIM = 128
 BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 2
 NUM_DECODER_LAYERS = 2
