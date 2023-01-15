@@ -10,6 +10,7 @@ import Seq2SeqModel
 from typing import List, Dict, Tuple, Union, Optional
 import config
 from ExperimentBase import ExperimentBase
+import Seq2SeqTransformer
 
 
 class Experiment1(ExperimentBase):
@@ -20,11 +21,18 @@ class Experiment1(ExperimentBase):
         train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
         run_type: str,
         n_runs: int,
+        criterion: torch.nn.Module = None,
     ):
 
         self.split = scan_dataset.ScanSplit.SIMPLE_SPLIT
         super().__init__(
-            model, model_config, train_args, run_type, n_runs, split=self.split
+            model,
+            model_config,
+            train_args,
+            run_type,
+            n_runs,
+            split=self.split,
+            criterion=criterion,
         )
 
     def run(self):
@@ -40,8 +48,9 @@ class Experiment1(ExperimentBase):
 def main():
     train_args = config.paper_train_args
 
-    for model_type in ["overall_best", "experiment_best"]:
+    for model_type in ["transformer"]:  # "overall_best", "experiment_best"
 
+        criterion = None
         if model_type == "overall_best":
             model = RNNSeq2Seq.RNNSeq2Seq()
             model_config = config.overall_best_config
@@ -55,9 +64,19 @@ def main():
                 rnn_type="LSTM",
                 teacher_forcing_ratio=0.5,
             )
+        elif model_type == "transformer":
+            model = Seq2SeqTransformer.Seq2SeqTransformer()
+            model_config = Seq2SeqTransformer.Seq2SeqTransformerConfig(
+                nhead=4,
+                num_encoder_layers=2,
+                num_decoder_layers=2,
+                dim_feedforward=128,
+                emb_size=128,
+                dropout=0.1,
+            )
+            criterion = torch.nn.CrossEntropyLoss(ignore_index=3)
 
         # Initialize wandb
-
         if train_args.log_wandb:
             wandb.init(
                 project="experiment-1",
@@ -72,7 +91,8 @@ def main():
             model_config=model_config,
             train_args=train_args,
             run_type=model_type,
-            n_runs=1,
+            n_runs=5,
+            criterion=criterion,
         ).run()
 
 

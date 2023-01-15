@@ -6,8 +6,11 @@ import random
 from Seq2SeqModel import Seq2SeqModel, Seq2SeqModelConfig
 from dataclasses import dataclass
 
+
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1):
+    def __init__(
+        self, input_size, hidden_size, n_layers=1, rnn_type="RNN", dropout_p=0.1
+    ):
         super(EncoderRNN, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -22,7 +25,7 @@ class EncoderRNN(nn.Module):
             hidden_size=self.hidden_size,
             num_layers=self.n_layers,
             dropout=dropout_p,
-            batch_first=True
+            batch_first=True,
         )
 
     def forward(self, input):
@@ -33,17 +36,24 @@ class EncoderRNN(nn.Module):
         # last layer hidden state, all hidden state
         return hidden, output
 
-
     def reset_model(self):
         for layer in self.children():
-            if hasattr(layer, 'reset_parameters'):
+            if hasattr(layer, "reset_parameters"):
                 layer.reset_parameters()
-        
+
         return self
 
 
 class DecoderCell(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, max_length=100):
+    def __init__(
+        self,
+        output_size,
+        hidden_size,
+        n_layers=1,
+        rnn_type="RNN",
+        dropout_p=0.1,
+        max_length=100,
+    ):
         super(DecoderCell, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -59,7 +69,7 @@ class DecoderCell(nn.Module):
             hidden_size=self.hidden_size,
             num_layers=self.n_layers,
             dropout=dropout_p,
-            batch_first=True
+            batch_first=True,
         )
 
         self.out = nn.Linear(self.hidden_size, output_size)
@@ -74,7 +84,6 @@ class DecoderCell(nn.Module):
         output = self.out(output[:, -1, :])
         output = self.softmax(output)
         return output, hidden
-
 
 
 class AdditiveAttention(nn.Module):
@@ -96,21 +105,28 @@ class AdditiveAttention(nn.Module):
         bmm = torch.bmm(self.attention_weights, values)
         return torch.sum(bmm, dim=0)
 
+
 class AttnDecoderCell(nn.Module):
-    def __init__(self, ouput_size, hidden_size, num_layers, rnn_type,
-                 dropout_p=0, max_length=100):
+    def __init__(
+        self, ouput_size, hidden_size, num_layers, rnn_type, dropout_p=0, max_length=100
+    ):
         super().__init__()
-        self.attention = AdditiveAttention(num_hiddens=hidden_size, key_size=hidden_size, query_size=hidden_size)
+        self.attention = AdditiveAttention(
+            num_hiddens=hidden_size, key_size=hidden_size, query_size=hidden_size
+        )
         self.embedding = nn.Embedding(ouput_size, hidden_size)
         self.rnn = nn.GRU(
-            hidden_size*2, hidden_size, num_layers,
+            hidden_size * 2,
+            hidden_size,
+            num_layers,
             dropout=dropout_p,
-            batch_first=True)
-        self.dense = nn.Linear(hidden_size*2, ouput_size)
+            batch_first=True,
+        )
+        self.dense = nn.Linear(hidden_size * 2, ouput_size)
         self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, input, hidden_state, enc_outputs):
-        
+
         # TODO: Doesn't handle batch size > 1
         # Reshaping to handle sequence length as batch to use bmm
         enc_outputs = enc_outputs.permute(1, 0, 2)
@@ -121,8 +137,7 @@ class AttnDecoderCell(nn.Module):
         # TODO: Doesn't handle LSTM
         # Only using last layer hidden state for attention
         query = torch.unsqueeze(hidden_state[-1], dim=1)
-        context = self.attention(
-            query, enc_outputs, enc_outputs)
+        context = self.attention(query, enc_outputs, enc_outputs)
 
         context = context.unsqueeze(0)
 
@@ -139,19 +154,34 @@ class AttnDecoderCell(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, output_size, hidden_size, n_layers=1, rnn_type='RNN', dropout_p=0.1, attention=False, max_length=100):
+    def __init__(
+        self,
+        output_size,
+        hidden_size,
+        n_layers=1,
+        rnn_type="RNN",
+        dropout_p=0.1,
+        attention=False,
+        max_length=100,
+    ):
         super(DecoderRNN, self).__init__()
 
         self.output_size = output_size
 
         self.attention = attention
         if attention:
-            self.decoder_cell = AttnDecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p, max_length)
+            self.decoder_cell = AttnDecoderCell(
+                output_size, hidden_size, n_layers, rnn_type, dropout_p, max_length
+            )
         else:
-            self.decoder_cell = DecoderCell(output_size, hidden_size, n_layers, rnn_type, dropout_p)
+            self.decoder_cell = DecoderCell(
+                output_size, hidden_size, n_layers, rnn_type, dropout_p
+            )
 
     def forward(self, input, hidden, enc_outputs=None):
-        assert enc_outputs is not None if self.attention else True  # If attention is used, all encoder hidden states must be provided
+        assert (
+            enc_outputs is not None if self.attention else True
+        )  # If attention is used, all encoder hidden states must be provided
         if self.attention:
             output, hidden = self.decoder_cell(input, hidden, enc_outputs)
         else:
@@ -161,11 +191,10 @@ class DecoderRNN(nn.Module):
 
     def reset_model(self):
         for layer in self.children():
-            if hasattr(layer, 'reset_parameters'):
+            if hasattr(layer, "reset_parameters"):
                 layer.reset_parameters()
-        
-        return self
 
+        return self
 
 
 @dataclass
@@ -174,11 +203,10 @@ class RNNSeq2SeqConfig(Seq2SeqModelConfig):
     hidden_size: int = 256
     n_layers: int = 1
     dropout_p: float = 0.1
-    rnn_type: str = 'RNN'
+    rnn_type: str = "RNN"
     attention: bool = False
     input_vocab_size: int = 0
     output_vocab_size: int = 0
-
 
 
 class RNNSeq2Seq(Seq2SeqModel):
@@ -187,8 +215,8 @@ class RNNSeq2Seq(Seq2SeqModel):
         self.config = config
         if config:
             self.from_config(config)
-        
-    def from_config(self, config: RNNSeq2SeqConfig): 
+
+    def from_config(self, config: RNNSeq2SeqConfig):
         self.pad_index = config.pad_index
         self.sos_index = config.sos_index
         self.eos_index = config.eos_index
@@ -200,21 +228,31 @@ class RNNSeq2Seq(Seq2SeqModel):
         self.rnn_type = config.rnn_type
         self.attention = config.attention
         self.teacher_forcing_ratio = config.teacher_forcing_ratio
-        self.encoder = EncoderRNN(self.input_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p)
-        self.decoder = DecoderRNN(self.output_vocab_size, self.hidden_size, self.n_layers, self.rnn_type, self.dropout_p, self.attention)
+        self.encoder = EncoderRNN(
+            self.input_vocab_size,
+            self.hidden_size,
+            self.n_layers,
+            self.rnn_type,
+            self.dropout_p,
+        )
+        self.decoder = DecoderRNN(
+            self.output_vocab_size,
+            self.hidden_size,
+            self.n_layers,
+            self.rnn_type,
+            self.dropout_p,
+            self.attention,
+        )
 
         self.reset_model()
 
         return self
-
-        
 
     def reset_model(self):
         self.encoder.reset_model()
         self.decoder.reset_model()
 
         return self
-
 
     def forward(self, input, target):
         batch_size = input.size(0)
@@ -249,13 +287,12 @@ class RNNSeq2Seq(Seq2SeqModel):
 
         oracle_target = oracle_target.squeeze() if oracle_target is not None else None
 
-
         # Initialize the output sequence with the SOS token
         outputs = torch.full((max_length,), self.pad_index, dtype=torch.long)
         outputs[0] = self.sos_index
 
         hidden, enc_outputs = self.encoder(input)
-        decoder_input = torch.full((1,1), self.pad_index, dtype=torch.long)
+        decoder_input = torch.full((1, 1), self.pad_index, dtype=torch.long)
 
         log_prob = 0
 
@@ -272,13 +309,13 @@ class RNNSeq2Seq(Seq2SeqModel):
                 outputs[t] = output.squeeze().argmax()
 
                 if oracle_length is not None:
-                    n_tokens = 4 # Number of tokens to consider
+                    n_tokens = 4  # Number of tokens to consider
                     # If eos is found but not at the end of the sequence take the next most likely word
                     if outputs[t].item() < n_tokens and t < max_length - 1:
                         # print(output.squeeze()[n_tokens:].argmax() + n_tokens)
                         outputs[t] = output.squeeze()[n_tokens:].argmax() + n_tokens
                 else:
-                # If the predicted word is EOS, stop predicting
+                    # If the predicted word is EOS, stop predicting
                     if outputs[t] == self.eos_index:
                         break
 
@@ -286,6 +323,6 @@ class RNNSeq2Seq(Seq2SeqModel):
 
         # If oracle length set last output to EOS
         if oracle_length is not None:
-            outputs[oracle_length-1] = self.eos_index
+            outputs[oracle_length - 1] = self.eos_index
 
         return outputs, log_prob

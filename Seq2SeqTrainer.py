@@ -249,9 +249,9 @@ class Seq2SeqTrainer:
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
-                if iter < 10:
-                    print(pred, ground_truth)
-                    iter += 1
+                # if iter < 10:
+                #     print(pred, ground_truth)
+                #     iter += 1
                 # else:
                 #     break
                 n_correct.append(np.all(pred == ground_truth))

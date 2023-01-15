@@ -14,8 +14,8 @@ overall_best_config = RNNSeq2SeqConfig(
 
 paper_train_args = Seq2SeqTrainingArguments(
     batch_size=1,
-    n_iter=10000,
-    print_every=1000,
+    n_iter=1000,
+    print_every=100,
     log_every=100,
     clip_grad=5.0,
     log_wandb=False,
