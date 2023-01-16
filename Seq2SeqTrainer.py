@@ -233,7 +233,7 @@ class Seq2SeqTrainer:
                     input, target
                 )
 
-                pred, _ = self.model.predict(input_tensor)
+                pred, _ = self.model.predict(input_tensor.to(self.device))
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
