@@ -276,7 +276,7 @@ class RNNSeq2Seq(Seq2SeqModel):
 
         return outputs
 
-    def predict(self, input, max_length=100, oracle_length=None, oracle_target=None):
+    def predict(self, input, max_length=60, oracle_length=None, oracle_target=None):
 
         # If oracle is provided, use it as the max length
         if oracle_length is not None:

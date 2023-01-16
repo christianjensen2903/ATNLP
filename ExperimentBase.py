@@ -19,6 +19,7 @@ class ExperimentBase:
         run_type: str,
         n_runs: int,
         split: ScanDataset.ScanSplit,
+        split_variation: str | list | None = None,
         criterion: torch.nn.Module = None,
     ):
         self.model = model
@@ -27,6 +28,7 @@ class ExperimentBase:
         self.run_type = run_type
         self.n_runs = n_runs
         self.split = split
+        self.split_variation = split_variation
         self.criterion = criterion
 
         self.load_data()
@@ -44,12 +46,14 @@ class ExperimentBase:
             input_lang=self.input_lang,
             output_lang=self.output_lang,
             split=self.split,
+            split_variation=self.split_variation,
             train=True,
         )
         self.test_dataset = ScanDataset.ScanDataset(
             input_lang=self.input_lang,
             output_lang=self.output_lang,
             split=self.split,
+            split_variation=self.split_variation,
             train=False,
         )
 

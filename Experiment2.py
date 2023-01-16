@@ -22,6 +22,8 @@ class Experiment2(ExperimentBase):
         train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
         run_type: str,
         n_runs: int,
+        split: ScanDataset.ScanSplit = None,
+        split_variation: str | list | None = None,
         criterion: torch.nn.Module = None,
     ):
         self.split = ScanDataset.ScanSplit.LENGTH_SPLIT
@@ -32,6 +34,7 @@ class Experiment2(ExperimentBase):
             run_type,
             n_runs,
             split=self.split,
+            split_variation=split_variation,
             criterion=criterion,
         )
 
@@ -151,7 +154,7 @@ def main():
             wandb.init(
                 project="experiment-2",
                 entity="atnlp",
-                config=train_args,
+                config=model_config,
                 reinit=True,
                 tags=["experiment-2", model_type],
             )

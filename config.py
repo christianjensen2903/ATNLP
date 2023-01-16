@@ -25,8 +25,8 @@ paper_train_args = Seq2SeqTrainingArguments(
 
 transformer_config = Seq2SeqTransformerConfig(
     nhead=8,
-    num_encoder_layers=2,
-    num_decoder_layers=2,
+    num_encoder_layers=1,
+    num_decoder_layers=1,
     dim_feedforward=256,
     emb_size=256,
     dropout=0.1,
@@ -35,10 +35,10 @@ transformer_config = Seq2SeqTransformerConfig(
 
 transformer_train_args = Seq2SeqTrainingArguments(
     batch_size=128,
-    n_iter=1000,
+    n_iter=10000,
     print_every=1000,
     log_every=100,
     clip_grad=5.0,
-    log_wandb=False,
+    log_wandb=True,
     output_dir="checkpoints",
 )

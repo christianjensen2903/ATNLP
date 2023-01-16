@@ -67,7 +67,7 @@ class Seq2SeqTransformer(Seq2SeqModel):
     def predict(
         self,
         input: torch.Tensor,
-        max_length: int = 100,
+        max_length: int = 60,
         oracle_length: int = None,
         oracle_target: torch.Tensor = None,
     ):
@@ -86,12 +86,12 @@ class Seq2SeqTransformer(Seq2SeqModel):
         oracle_target = oracle_target.squeeze() if oracle_target is not None else None
         output = self.transformer.generate(
             input_ids=input,
-            max_length=max_length,  # +10 due to the model predicting 0 at the end of the sequence of some reason otherwise,
-            min_length=min_length,
+            max_length=max_length,
+            min_length=min_length
+            + 1,  # +1 due to the model predicting two 0's at the start of the sequence of some reason,
             bos_token_id=self.config.sos_index,
             pad_token_id=self.config.pad_index,
             eos_token_id=self.config.eos_index,
         )
-        # output = output[:, 1:]  # remove the extra token
+        output = output[:, 1:]  # remove the extra token
         return output, 0  # TODO: return the probability
-        # return self.transformer.generate(input_ids=input, max_length=max_length), None

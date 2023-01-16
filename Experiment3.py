@@ -21,18 +21,19 @@ class Experiment3(ExperimentBase):
         train_args: Seq2SeqTrainer.Seq2SeqTrainingArguments,
         run_type: str,
         n_runs: int,
-        split: ScanDataset.ScanSplit,
+        split: ScanDataset.ScanSplit = None,
+        split_variation: str | list | None = None,
         criterion: torch.nn.Module = None,
     ):
 
-        self.split = split
         super().__init__(
             model,
             model_config,
             train_args,
             run_type,
             n_runs,
-            split=self.split,
+            split=ScanDataset.ScanSplit.ADD_PRIM_SPLIT,
+            split_variation=split_variation,
             criterion=criterion,
         )
 
@@ -43,10 +44,7 @@ class Experiment3(ExperimentBase):
 def main():
 
     for model_type in ["transformer"]:  # "overall_best", "experiment_best"
-        for split in [
-            ScanDataset.ScanSplit.FEW_SHOT_SPLIT,
-            ScanDataset.ScanSplit.ADD_PRIM_SPLIT,
-        ]:
+        for split_variation in ["jump", "turn_left"]:
 
             criterion = None
             if model_type == "overall_best":
@@ -77,7 +75,7 @@ def main():
                     entity="atnlp",
                     config=train_args,
                     reinit=True,
-                    tags=["experiment-3", "overall_best", split],
+                    tags=["experiment-3", "overall_best", split_variation],
                 )
 
             Experiment3(
@@ -86,7 +84,7 @@ def main():
                 train_args=train_args,
                 run_type="overall_best",
                 n_runs=1,
-                split=split,
+                split_variation=split_variation,
                 criterion=criterion,
             ).run()
 

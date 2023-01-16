@@ -233,9 +233,7 @@ class Seq2SeqTrainer:
                     input, target
                 )
 
-                max_length = target_tensor.size(1)
-
-                pred, _ = self.model.predict(input_tensor, max_length=max_length)
+                pred, _ = self.model.predict(input_tensor)
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
