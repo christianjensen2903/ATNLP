@@ -94,9 +94,6 @@ class Seq2SeqTrainer:
         callbacks: List[TrainerCallback] = [],
     ):
 
-        if train_dataset is None:
-            train_dataset = test_dataset
-
         if test_dataset is None:
             test_dataset = train_dataset
 
@@ -209,18 +206,11 @@ class Seq2SeqTrainer:
         self.model.train()
         self.optimizer.zero_grad()
 
-        # target_input = target_tensor[:, :-1]
-
-        outputs = self.model(
-            input_tensor.to(self.device),
-            target_tensor.to(self.device),
-        )
+        input_tensor = input_tensor.to(self.device)
+        target_tensor = target_tensor.to(self.device)
+        outputs = self.model(input_tensor, target_tensor)
 
         loss = self.criterion(outputs.permute(0, 2, 1), target_tensor)
-
-        # target_output = target_tensor[:, 1:].contiguous().view(-1)
-
-        # loss = self.criterion(outputs.reshape(-1, outputs.shape[-1]), target_output)
 
         loss.backward()
 

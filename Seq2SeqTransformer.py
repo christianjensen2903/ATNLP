@@ -84,11 +84,9 @@ class Seq2SeqTransformer(Seq2SeqModel):
             min_length = oracle_target.size(1)
 
         oracle_target = oracle_target.squeeze() if oracle_target is not None else None
-
         output = self.transformer.generate(
             input_ids=input,
-            max_length=max_length
-            + 10,  # +10 due to the model predicting 0 at the end of the sequence of some reason otherwise,
+            max_length=max_length,  # +10 due to the model predicting 0 at the end of the sequence of some reason otherwise,
             min_length=min_length,
             bos_token_id=self.config.sos_index,
             pad_token_id=self.config.pad_index,

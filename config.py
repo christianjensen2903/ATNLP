@@ -35,7 +35,7 @@ transformer_config = Seq2SeqTransformerConfig(
 
 transformer_train_args = Seq2SeqTrainingArguments(
     batch_size=128,
-    n_iter=10000,
+    n_iter=1000,
     print_every=1000,
     log_every=100,
     clip_grad=5.0,
