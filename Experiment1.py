@@ -22,7 +22,7 @@ class Experiment1(ExperimentBase):
         run_type: str,
         n_runs: int,
         split: ScanDataset.ScanSplit = None,
-        split_variation: str | list | None = None,
+        split_variation: Union[str, List] = None,
         criterion: torch.nn.Module = None,
     ):
 
