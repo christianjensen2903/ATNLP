@@ -38,12 +38,6 @@ class Experiment3(ExperimentBase):
 
     def run(self):
         self.train_models()
-        self.length_generalization(
-            split=self.split,
-            splits=["p1", "p2", "p4", "p8", "p16", "p32", "p64"],
-            x_label="Percent of commands used for training",
-            plot_title=f"training_pct_accuracy",
-        )
 
 
 def main():
