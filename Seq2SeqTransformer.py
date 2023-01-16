@@ -92,6 +92,6 @@ class Seq2SeqTransformer(Seq2SeqModel):
             pad_token_id=self.config.pad_index,
             eos_token_id=self.config.eos_index,
         )
-        output = output[:, 1:]  # remove the extra token
+        # output = output[:, 1:]  # remove the extra token
         return output, 0  # TODO: return the probability
         # return self.transformer.generate(input_ids=input, max_length=max_length), None

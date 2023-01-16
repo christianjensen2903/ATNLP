@@ -104,13 +104,12 @@ class Seq2SeqTrainer:
             optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
         if criterion is None:
-            assert (
-                train_dataset is not None,
-                "Train dataset must be provided if criterion is not provided",
-            )
-            criterion = torch.nn.NLLLoss(
-                ignore_index=train_dataset.output_lang.pad_index
-            )
+            if train_dataset:
+                criterion = torch.nn.NLLLoss(
+                    ignore_index=train_dataset.output_lang.pad_index
+                )
+            else:
+                criterion = torch.nn.NLLLoss()
 
         self.callbacks = callbacks
         self.model = model
