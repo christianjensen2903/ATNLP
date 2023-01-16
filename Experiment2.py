@@ -161,7 +161,7 @@ def main():
             model_config=model_config,
             train_args=train_args,
             run_type=model_type,
-            n_runs=5,
+            n_runs=1,
             criterion=criterion,
         ).run()
 

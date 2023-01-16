@@ -124,6 +124,7 @@ class Seq2SeqTrainer:
         self.test_dataset = test_dataset
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        self.model = self.model.to(self.device)
         self.state = TrainerState()
 
     def train(self, verbose: bool = True, evaluate_after: bool = False):
@@ -251,9 +252,11 @@ class Seq2SeqTrainer:
                 ground_truth = target_tensor.numpy().squeeze()
                 if iter < 10:
                     print(pred, ground_truth)
+                    print(pred.shape, ground_truth.shape)
                     iter += 1
-                else:
-                    break
+                # else:
+                #     break
+
                 n_correct.append(np.all(pred == ground_truth))
 
         accuracy = np.mean(n_correct)

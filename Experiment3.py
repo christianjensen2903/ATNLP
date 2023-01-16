@@ -96,6 +96,8 @@ def main():
                 criterion=criterion,
             ).run()
 
+            wandb.finish()
+
 
 if __name__ == "__main__":
     main()

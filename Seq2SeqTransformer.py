@@ -59,6 +59,9 @@ class Seq2SeqTransformer(Seq2SeqModel):
         return self
 
     def forward(self, input: Tensor, target: Tensor):
+        input = input[
+            :, 1:
+        ]  # Remove start token since labels are shifted right and start token is added
         return self.transformer(input_ids=input, labels=target).logits
 
     def predict(
@@ -85,7 +88,7 @@ class Seq2SeqTransformer(Seq2SeqModel):
         output = self.transformer.generate(
             input_ids=input,
             max_length=max_length
-            + 1,  # +1 due to the model generating an extra token of some reason,
+            + 10,  # +10 due to the model predicting 0 at the end of the sequence of some reason otherwise,
             min_length=min_length,
             bos_token_id=self.config.sos_index,
             pad_token_id=self.config.pad_index,

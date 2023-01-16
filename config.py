@@ -24,11 +24,11 @@ paper_train_args = Seq2SeqTrainingArguments(
 )
 
 transformer_config = Seq2SeqTransformerConfig(
-    nhead=4,
+    nhead=8,
     num_encoder_layers=2,
     num_decoder_layers=2,
-    dim_feedforward=128,
-    emb_size=128,
+    dim_feedforward=256,
+    emb_size=256,
     dropout=0.1,
 )
 
