@@ -99,6 +99,8 @@ class ExperimentBase:
 
         print(f"Average accuracy: {avg_accuracy}")
 
+        return avg_accuracy
+
     def length_generalization(
         self,
         split: ScanDataset.ScanSplit,

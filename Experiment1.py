@@ -40,12 +40,58 @@ class Experiment1(ExperimentBase):
 
     def run(self):
         self.train_models()
-        # self.length_generalization(
-        #     split=self.split,
-        #     splits=["p1", "p2", "p4", "p8", "p16", "p32", "p64"],
-        #     x_label="Percent of commands used for training",
-        #     plot_title=f"training_pct_accuracy",
-        # )
+        self.training_percentage()
+
+    def training_percentage(self):
+        """Test how well the model performs on different percentages of the training data"""
+        splits = ["p1", "p2", "p4", "p8", "p16", "p32", "p64"]
+
+        results = {}
+        for split in splits:
+            self.train_dataset = ScanDataset.ScanDataset(
+                input_lang=self.input_lang,
+                output_lang=self.output_lang,
+                split=self.split,
+                split_variation=split,
+                train=True,
+            )
+            self.test_dataset = ScanDataset.ScanDataset(
+                input_lang=self.input_lang,
+                output_lang=self.output_lang,
+                split=self.split,
+                split_variation=split,
+                train=False,
+            )
+
+            results[split] = []
+
+            for i in range(self.n_runs):
+
+                # Reset model
+                model = self.model.copy().reset_model()
+
+                # Train and evaluate model
+                trainer = Seq2SeqTrainer.Seq2SeqTrainer(
+                    model=model,
+                    args=self.train_args,
+                    train_dataset=self.train_dataset,
+                    test_dataset=self.test_dataset,
+                    criterion=self.criterion,
+                )
+
+                model = trainer.train(evaluate_after=False)
+                self.saved_models.append(model)
+                metrics = trainer.evaluate()
+                results[split].append(metrics["eval_accuracy"])
+
+        # Plot results
+        self.plot_bar_chart(
+            results=results,
+            x_label="Percent of commands used for training",
+            y_label="Accuracy on new commands (%)",
+            plot_title=f"training_pct_accuracy",
+            save_path=f"plots/{self.run_type}_training_pct_accuracy.png",
+        )
 
 
 def main():
