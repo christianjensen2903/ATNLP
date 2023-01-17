@@ -77,7 +77,10 @@ sweep_configuration = {
 
 # 🐝 Step 3: Initialize sweep by passing in config
 # sweep_id = wandb.sweep(sweep=sweep_configuration, project="transformer-sweep")
-sweep_id = "8hursjmx"
+sweep_id = "b7sc4l8t"
 
-# 🐝 Step 4: Call to `wandb.agent` to start a sweep
-wandb.agent(sweep_id, function=main, count=1)
+while True:
+    # 🐝 Step 4: Call to `wandb.agent` to start a sweep
+    wandb.agent(
+        sweep_id, function=main, count=1, project="transformer-sweep", entity="atnlp"
+    )
