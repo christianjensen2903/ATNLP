@@ -17,6 +17,7 @@ class Seq2SeqTransformerConfig(Seq2SeqModelConfig):
     nhead: int = 8
     dim_feedforward: int = 512
     dropout: float = 0.1
+    num_beams: int = 1
 
 
 # Seq2Seq Network
@@ -86,12 +87,14 @@ class Seq2SeqTransformer(Seq2SeqModel):
         oracle_target = oracle_target.squeeze() if oracle_target is not None else None
         output = self.transformer.generate(
             input_ids=input,
-            max_length=max_length,
+            max_length=max_length + 1,
             min_length=min_length
             + 1,  # +1 due to the model predicting two 0's at the start of the sequence of some reason,
             bos_token_id=self.config.sos_index,
             pad_token_id=self.config.pad_index,
             eos_token_id=self.config.eos_index,
+            forced_eos_token_id=self.config.eos_index,
+            num_beams=self.config.num_beams,
         )
         output = output[:, 1:]  # remove the extra token
         return output, 0  # TODO: return the probability

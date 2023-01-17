@@ -38,6 +38,8 @@ class Experiment2(ExperimentBase):
             criterion=criterion,
         )
 
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     def run(self):
         self.train_models()
         # self.length_generalization(split=self.split, splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
@@ -64,10 +66,13 @@ class Experiment2(ExperimentBase):
                         input, target
                     )
 
-                    _, greedy_prob = model.predict(input_tensor, max_length=100)
+                    _, greedy_prob = model.predict(
+                        input_tensor.to(self.device), max_length=100
+                    )
 
                     _, oracle_prob = model.predict(
-                        input_tensor, oracle_target=target_tensor
+                        input_tensor.to(self.device),
+                        oracle_target=target_tensor.to(self.device),
                     )
 
                     oracle_best.append(oracle_prob > greedy_prob)
@@ -103,7 +108,8 @@ class Experiment2(ExperimentBase):
                     )
 
                     pred, _ = model.predict(
-                        input_tensor, oracle_length=target_tensor.size(1)
+                        input_tensor.to(self.device),
+                        oracle_length=target_tensor.size(1),
                     )
 
                     pred = pred.squeeze().cpu().numpy()
