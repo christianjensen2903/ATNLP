@@ -177,9 +177,6 @@ class ExperimentBase:
         # plt.xticks()
         ax.set_ylim(bottom=0, top=1)
 
-        # if self.train_args.log_wandb:
-        #     wandb.log({plot_title: fig})
-
         # Create folder if it doesn't exist
         path = "plot"
         isExist = os.path.exists(path)
@@ -189,3 +186,7 @@ class ExperimentBase:
 
         if save_path:
             plt.savefig(save_path)
+
+        if self.train_args.log_wandb:
+            wandb.log({f"{plot_title}-image": save_path})
+            wandb.log({f"{plot_title}": plt})
