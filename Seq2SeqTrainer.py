@@ -237,11 +237,11 @@ class Seq2SeqTrainer:
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
-                if iter < 10:
-                    print(pred, ground_truth)
-                    print(pred.shape, ground_truth.shape)
+                # if iter < 10:
+                #     print(pred, ground_truth)
+                #     print(pred.shape, ground_truth.shape)
 
-                if iter > 3000:
+                if iter > 4000:
                     break
 
                 iter += 1
