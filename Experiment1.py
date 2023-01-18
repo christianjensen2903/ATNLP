@@ -83,6 +83,9 @@ class Experiment1(ExperimentBase):
                 metrics = trainer.evaluate()
                 results[split].append(metrics["eval_accuracy"])
 
+            print(f"Finished {split} split")
+            print(f"Results: {results[split]}")
+
         # Plot results
         self.plot_bar_chart(
             results=results,
