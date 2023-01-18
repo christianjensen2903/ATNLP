@@ -8,6 +8,7 @@ import torch
 from typing import List, Dict, Tuple, Union, Optional
 from CustomTrainerCallback import CustomTrainerCallback
 import math
+import os
 
 
 class ExperimentBase:
@@ -140,7 +141,7 @@ class ExperimentBase:
             x_label=x_label,
             y_label="Accuracy on new commands (%)",
             plot_title=plot_title,
-            save_path=f"plots/{plot_title}-{self.run_type}.png",
+            save_path=f"{plot_title}-{self.run_type}.png",
         )
 
     def plot_bar_chart(
@@ -178,6 +179,13 @@ class ExperimentBase:
 
         # if self.train_args.log_wandb:
         #     wandb.log({plot_title: fig})
+
+        # Create folder if it doesn't exist
+        path = "plot"
+        isExist = os.path.exists(path)
+        if not isExist:
+            # Create a new directory because it does not exist
+            os.makedirs(path)
 
         if save_path:
             plt.savefig(save_path)

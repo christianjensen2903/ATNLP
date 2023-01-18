@@ -80,7 +80,6 @@ class Experiment1(ExperimentBase):
                 )
 
                 model = trainer.train(evaluate_after=False)
-                self.saved_models.append(model)
                 metrics = trainer.evaluate()
                 results[split].append(metrics["eval_accuracy"])
 
@@ -90,7 +89,7 @@ class Experiment1(ExperimentBase):
             x_label="Percent of commands used for training",
             y_label="Accuracy on new commands (%)",
             plot_title=f"training_pct_accuracy",
-            save_path=f"plots/{self.run_type}_training_pct_accuracy.png",
+            save_path=f"{self.run_type}_training_pct_accuracy.png",
         )
 
 

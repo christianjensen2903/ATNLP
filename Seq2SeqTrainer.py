@@ -240,11 +240,11 @@ class Seq2SeqTrainer:
                 if iter < 10:
                     print(pred, ground_truth)
                     print(pred.shape, ground_truth.shape)
-                    iter += 1
+
                 if iter > 3000:
                     break
-                # else:
-                #     break
+
+                iter += 1
 
                 n_correct.append(np.all(pred == ground_truth))
 
