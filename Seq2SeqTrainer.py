@@ -241,6 +241,8 @@ class Seq2SeqTrainer:
                     print(pred, ground_truth)
                     print(pred.shape, ground_truth.shape)
                     iter += 1
+                if iter > 3000:
+                    break
                 # else:
                 #     break
 

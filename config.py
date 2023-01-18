@@ -24,19 +24,19 @@ paper_train_args = Seq2SeqTrainingArguments(
 )
 
 transformer_config = Seq2SeqTransformerConfig(
-    nhead=8,
-    num_encoder_layers=1,
-    num_decoder_layers=1,
+    nhead=16,
+    num_encoder_layers=3,
+    num_decoder_layers=3,
     dim_feedforward=64,
-    emb_size=64,
-    dropout=0.1,
-    num_beams=1,
+    emb_size=256,
+    dropout=0.3,
+    num_beams=6,
 )
 
 
 transformer_train_args = Seq2SeqTrainingArguments(
     batch_size=128,
-    n_iter=10000,
+    n_iter=20000,
     print_every=1000,
     log_every=100,
     clip_grad=5.0,
