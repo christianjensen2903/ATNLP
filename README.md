@@ -1,9 +1,9 @@
 # ATNLP
 
-## Experiment1 1 to 2
+## Experiment 1 to 2
 just run `Experiment1.py ` and `Experiment2.py `
 
-## Experiment1 3 
+## Experiment 3 
 the code is at seq2seqBest.tar
 
 ## resources 
