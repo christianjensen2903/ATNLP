@@ -130,10 +130,13 @@ class ExperimentBase:
                     test_dataset=test_dataset,
                 )
                 metrics = trainer.evaluate()
+
                 if split not in results:
                     results[split] = [metrics["eval_accuracy"]]
                 else:
                     results[split].append(metrics["eval_accuracy"])
+            print(f"Finished {split} split")
+            print(f"Results: {results[split]}")
 
         # Plot results
         self.plot_bar_chart(
