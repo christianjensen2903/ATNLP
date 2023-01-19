@@ -111,18 +111,17 @@ class ExperimentBase:
     ):
 
         results: Dict[int, List] = {}
-
-        for i, model in enumerate(self.saved_models):
+        for split in splits:
+            test_dataset = ScanDataset.ScanDataset(
+                split=self.split,
+                split_variation=split,
+                input_lang=self.input_lang,
+                output_lang=self.output_lang,
+                train=False,
+            )
 
             # Evaluate on various lengths
-            for split in splits:
-                test_dataset = ScanDataset.ScanDataset(
-                    split=self.split,
-                    split_variation=split,
-                    input_lang=self.input_lang,
-                    output_lang=self.output_lang,
-                    train=False,
-                )
+            for i, model in enumerate(self.saved_models):
 
                 trainer = Seq2SeqTrainer.Seq2SeqTrainer(
                     model=model,
