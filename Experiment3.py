@@ -75,14 +75,14 @@ def main():
                     entity="atnlp",
                     config=train_args,
                     reinit=True,
-                    tags=["experiment-3", "overall_best", split_variation],
+                    tags=["experiment-3", model_type, split_variation],
                 )
 
             Experiment3(
                 model=model,
                 model_config=model_config,
                 train_args=train_args,
-                run_type="overall_best",
+                run_type=model_type,
                 n_runs=1,
                 split_variation=split_variation,
                 criterion=criterion,
