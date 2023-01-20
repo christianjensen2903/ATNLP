@@ -220,7 +220,6 @@ class Seq2SeqTrainer:
     def evaluate(self, verbose: bool = False):
         """Evaluate the model on the test dataset."""
         self.model.eval()
-        iter = 0
         n_correct = []  # number of correct predictions
         with torch.no_grad():
             for input, target in tqdm(
@@ -237,14 +236,6 @@ class Seq2SeqTrainer:
 
                 pred = pred.squeeze().cpu().numpy()
                 ground_truth = target_tensor.numpy().squeeze()
-                if iter < 5:
-                    print(pred, ground_truth)
-                    print(pred.shape, ground_truth.shape)
-
-                if iter > 4000:
-                    break
-
-                iter += 1
 
                 # Remove padding if any
                 if self.test_dataset.output_lang.pad_index is not None:

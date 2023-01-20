@@ -42,10 +42,20 @@ class Experiment2(ExperimentBase):
 
     def run(self):
         self.train_models()
-        # self.length_generalization(split=self.split, splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48], x_label='Ground-truth action sequence length', plot_title=f'sequence_split')
-        # self.length_generalization(split=self.split, splits=[4, 6, 7, 8, 9], x_label='Command length', plot_title=f'command_split')
-        # self.inspect_greedy_search()
-        # self.oracle_test()
+        self.length_generalization(
+            split=self.split,
+            splits=[24, 25, 26, 27, 28, 30, 32, 33, 36, 40, 48],
+            x_label="Ground-truth action sequence length",
+            plot_title=f"sequence_split",
+        )
+        self.length_generalization(
+            split=self.split,
+            splits=[4, 6, 7, 8, 9],
+            x_label="Command length",
+            plot_title=f"command_split",
+        )
+        self.inspect_greedy_search()
+        self.oracle_test()
 
     def inspect_greedy_search(self):
         results = []
@@ -130,7 +140,7 @@ class Experiment2(ExperimentBase):
 
 def main():
 
-    for model_type in ["transformer"]:  # "overall_best", "experiment_best"
+    for model_type in ["transformer", "overall_best", "experiment_best"]:
 
         criterion = None
         if model_type == "overall_best":
@@ -170,7 +180,7 @@ def main():
             model_config=model_config,
             train_args=train_args,
             run_type=model_type,
-            n_runs=1,
+            n_runs=5,
             criterion=criterion,
         ).run()
 

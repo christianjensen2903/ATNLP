@@ -40,6 +40,6 @@ transformer_train_args = Seq2SeqTrainingArguments(
     print_every=1000,
     log_every=100,
     clip_grad=5.0,
-    log_wandb=True,
+    log_wandb=False,
     output_dir="checkpoints",
 )

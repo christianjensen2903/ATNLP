@@ -175,8 +175,6 @@ class ExperimentBase:
         )
         ax.set_xlabel(x_label)
         ax.set_ylabel(y_label)
-        # TODO: figure out how to set x axis labels to exactly 'splits'
-        # plt.xticks()
         ax.set_ylim(bottom=0, top=1)
 
         # Create folder if it doesn't exist
