@@ -4,7 +4,7 @@
 put the scan dataset under this directory
 
 ## Experiment 1 to 2
- open the file `Experiment1.py ` and `Experiment2.py ` and make relevant code changes,then run
+ open the file `Experiment1.py ` and `Experiment2.py ` and make relevant code changes,then run .If wandb prompts,choose `wandb: (3) Don't visualize my results`
 
 
 ## resources 
