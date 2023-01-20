@@ -246,6 +246,13 @@ class Seq2SeqTrainer:
 
                 iter += 1
 
+                # Remove padding if any
+                if self.test_dataset.output_lang.pad_index is not None:
+                    pred = pred[pred != self.test_dataset.output_lang.pad_index]
+                    ground_truth = ground_truth[
+                        ground_truth != self.test_dataset.output_lang.pad_index
+                    ]
+
                 n_correct.append(np.all(pred == ground_truth))
 
         accuracy = np.mean(n_correct)
